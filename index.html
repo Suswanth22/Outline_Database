@@ -1,0 +1,1818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Motor Outline Dimension Database</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%23003366'/><circle cx='16' cy='16' r='9' stroke='white' stroke-width='2' fill='none'/><circle cx='16' cy='16' r='3.5' fill='white'/><line x1='16' y1='7' x2='16' y2='10' stroke='white' stroke-width='1.5' stroke-linecap='round'/><line x1='16' y1='22' x2='16' y2='25' stroke='white' stroke-width='1.5' stroke-linecap='round'/><line x1='7' y1='16' x2='10' y2='16' stroke='white' stroke-width='1.5' stroke-linecap='round'/><line x1='22' y1='16' x2='25' y2='16' stroke='white' stroke-width='1.5' stroke-linecap='round'/></svg>" />
+  <meta name="description" content="Professional engineering tool for searching and analyzing SolidWorks motor outline drawings." />
+  <!-- PDF.js CDN (required for PDF parsing) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+<style>
+/* ============================================================
+   MOTOR OUTLINE DIMENSION DATABASE - Professional Engineering UI
+   ============================================================ */
+
+/* ===== CSS VARIABLES / DESIGN TOKENS ===== */
+:root {
+  --primary:       #003366;
+  --primary-dark:  #002244;
+  --accent:        #005BAC;
+  --accent-light:  #3B82F6;
+  --bg:            #F4F7FA;
+  --bg-alt:        #EBF1FA;
+  --card-bg:       #FFFFFF;
+  --border:        #D1DCE8;
+  --border-light:  #E8EFF7;
+  --text-primary:  #0F1C2E;
+  --text-secondary:#4A637A;
+  --text-muted:    #7D9AB3;
+  --success:       #16a34a;
+  --success-bg:    #DCFCE7;
+  --warning:       #D97706;
+  --warning-bg:    #FEF3C7;
+  --danger:        #DC2626;
+  --danger-bg:     #FEE2E2;
+  --info:          #005BAC;
+  --info-bg:       #EFF6FF;
+  --shadow-sm:     0 1px 3px rgba(0,51,102,0.08), 0 1px 2px rgba(0,51,102,0.04);
+  --shadow-md:     0 4px 12px rgba(0,51,102,0.10), 0 2px 6px rgba(0,51,102,0.06);
+  --shadow-lg:     0 10px 32px rgba(0,51,102,0.14), 0 4px 12px rgba(0,51,102,0.08);
+  --shadow-xl:     0 20px 48px rgba(0,51,102,0.18), 0 8px 24px rgba(0,51,102,0.10);
+  --radius:        10px;
+  --radius-sm:     6px;
+  --radius-lg:     16px;
+  --header-h:      60px;
+  --transition:    0.18s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* Dark Theme */
+[data-theme="dark"] {
+  --primary:       #4F9EE8;
+  --primary-dark:  #3A7FC4;
+  --accent:        #5BA8EF;
+  --accent-light:  #60A5FA;
+  --bg:            #0D1117;
+  --bg-alt:        #161B22;
+  --card-bg:       #1C2331;
+  --border:        #2D3748;
+  --border-light:  #252D3A;
+  --text-primary:  #E6EDF3;
+  --text-secondary:#8B949E;
+  --text-muted:    #6E7681;
+  --shadow-sm:     0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
+  --shadow-md:     0 4px 12px rgba(0,0,0,0.5), 0 2px 6px rgba(0,0,0,0.3);
+  --shadow-lg:     0 10px 32px rgba(0,0,0,0.6), 0 4px 12px rgba(0,0,0,0.4);
+  --shadow-xl:     0 20px 48px rgba(0,0,0,0.7), 0 8px 24px rgba(0,0,0,0.5);
+  --success-bg:    #0D2818;
+  --warning-bg:    #2D1F04;
+  --danger-bg:     #2D0808;
+  --info-bg:       #0D1B2A;
+}
+
+/* Engineering Blue Theme */
+[data-theme="engineering"] {
+  --bg:            #0A1628;
+  --bg-alt:        #0F1F3A;
+  --card-bg:       #142040;
+  --border:        #1E3A5F;
+  --border-light:  #1A3050;
+  --text-primary:  #B8D4F0;
+  --text-secondary:#6A9BC0;
+  --text-muted:    #3A6A9A;
+  --shadow-sm:     0 1px 3px rgba(0,0,0,0.5);
+  --shadow-md:     0 4px 12px rgba(0,0,0,0.6);
+  --shadow-lg:     0 10px 32px rgba(0,0,0,0.7);
+  --info-bg:       #0A1628;
+}
+
+/* ===== RESET & BASE ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; font-size: 14px; }
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text-primary);
+  line-height: 1.5;
+  min-height: 100vh;
+  transition: background var(--transition), color var(--transition);
+  overflow-x: hidden;
+}
+
+/* ===== TYPOGRAPHY ===== */
+h1 { font-size: 2rem; font-weight: 800; letter-spacing: -0.02em; }
+h2 { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.01em; }
+h3 { font-size: 1rem; font-weight: 600; }
+h4 { font-size: 0.9rem; font-weight: 600; }
+p  { color: var(--text-secondary); line-height: 1.6; }
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-alt); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* ===== HEADER ===== */
+.app-header {
+  position: sticky; top: 0; z-index: 100;
+  height: var(--header-h);
+  display: flex; align-items: center; gap: 24px;
+  padding: 0 24px;
+  background: var(--primary);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  box-shadow: var(--shadow-md);
+}
+.header-brand { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.header-logo { width: 36px; height: 36px; }
+.header-title-group { display: flex; flex-direction: column; gap: 0; }
+.header-title { font-size: 0.85rem; font-weight: 700; color: #fff; letter-spacing: 0.02em; text-transform: uppercase; }
+.header-subtitle { font-size: 0.68rem; color: rgba(255,255,255,0.5); }
+.main-nav { display: flex; align-items: center; gap: 2px; flex: 1; }
+.nav-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 14px;
+  background: transparent; border: none; border-radius: var(--radius-sm);
+  color: rgba(255,255,255,0.65); font-size: 0.82rem; font-weight: 500;
+  cursor: pointer; transition: all var(--transition); white-space: nowrap;
+}
+.nav-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.nav-btn.active { background: rgba(255,255,255,0.15); color: #fff; font-weight: 600; }
+.nav-icon { width: 15px; height: 15px; flex-shrink: 0; }
+.header-actions { display: flex; align-items: center; gap: 10px; margin-left: auto; flex-shrink: 0; }
+.icon-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px;
+  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
+  border-radius: var(--radius-sm); color: rgba(255,255,255,0.75);
+  cursor: pointer; font-size: 0.75rem; font-weight: 600;
+  transition: all var(--transition);
+}
+.icon-btn:hover { background: rgba(255,255,255,0.18); color: #fff; }
+.db-count-badge {
+  display: flex; align-items: center; padding: 5px 12px;
+  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 20px; color: rgba(255,255,255,0.85); font-size: 0.75rem; font-weight: 600; gap: 5px;
+}
+#dbCountNum { color: #fff; font-weight: 700; }
+
+/* ===== HERO BANNER ===== */
+.hero-banner {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 40px 32px;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+  color: white; position: relative; overflow: hidden;
+}
+.hero-banner::before {
+  content: ''; position: absolute; inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  pointer-events: none;
+}
+.hero-content { position: relative; z-index: 1; max-width: 600px; }
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 12px; background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.25); border-radius: 20px;
+  font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em;
+  margin-bottom: 16px; animation: fadeInDown 0.5s ease;
+}
+.hero-title { font-size: 2.2rem; font-weight: 800; line-height: 1.15; letter-spacing: -0.03em; margin-bottom: 10px; animation: fadeInUp 0.5s ease 0.1s both; }
+.hero-subtitle { font-size: 0.95rem; color: rgba(255,255,255,0.75); margin-bottom: 24px; animation: fadeInUp 0.5s ease 0.2s both; }
+.hero-actions { display: flex; gap: 12px; animation: fadeInUp 0.5s ease 0.3s both; }
+.hero-visual { position: relative; z-index: 1; }
+
+/* ===== MAIN CONTENT ===== */
+.main-content { max-width: 1400px; margin: 0 auto; padding: 28px 28px 80px; }
+.content-section { display: none; animation: fadeInUp 0.25s ease; }
+.content-section.active { display: block; }
+
+/* ===== SECTION HEADER ===== */
+.section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+.section-title { font-size: 1.3rem; font-weight: 700; color: var(--text-primary); }
+.section-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+/* ===== CARDS ===== */
+.card {
+  background: var(--card-bg); border: 1px solid var(--border-light);
+  border-radius: var(--radius); box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition), transform var(--transition); overflow: visible;
+}
+.card:hover { box-shadow: var(--shadow-md); }
+.card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; border-bottom: 1px solid var(--border-light);
+}
+.card-title { font-size: 0.9rem; font-weight: 600; color: var(--text-primary); }
+
+/* ===== STATS GRID ===== */
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.stat-card {
+  display: flex; align-items: center; gap: 16px; padding: 20px;
+  background: var(--card-bg); border: 1px solid var(--border-light);
+  border-radius: var(--radius); box-shadow: var(--shadow-sm);
+  transition: all var(--transition); cursor: pointer;
+}
+.stat-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); border-color: var(--accent); }
+.stat-icon { width: 44px; height: 44px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.stat-icon svg { width: 20px; height: 20px; }
+.stat-icon--blue   { background: #EFF6FF; color: #1D4ED8; }
+.stat-icon--teal   { background: #F0FDFA; color: #0D9488; }
+.stat-icon--purple { background: #F5F3FF; color: #7C3AED; }
+.stat-icon--orange { background: #FFF7ED; color: #EA580C; }
+.stat-icon--green  { background: #F0FDF4; color: #16A34A; }
+[data-theme="dark"] .stat-icon--blue   { background: #172554; color: #60A5FA; }
+[data-theme="dark"] .stat-icon--teal   { background: #042F2E; color: #2DD4BF; }
+[data-theme="dark"] .stat-icon--purple { background: #2E1065; color: #A78BFA; }
+[data-theme="dark"] .stat-icon--orange { background: #431407; color: #FB923C; }
+[data-theme="dark"] .stat-icon--green  { background: #052E16; color: #4ADE80; }
+.stat-content { flex: 1; min-width: 0; }
+.stat-value  { font-size: 1.7rem; font-weight: 800; color: var(--text-primary); line-height: 1; }
+.stat-label  { font-size: 0.75rem; color: var(--text-secondary); font-weight: 500; margin-top: 4px; }
+.stat-change { font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ===== RECENT DRAWINGS LIST ===== */
+.recent-drawing-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 20px; border-bottom: 1px solid var(--border-light);
+  cursor: pointer; transition: background var(--transition); gap: 16px;
+}
+.recent-drawing-row:last-child { border-bottom: none; }
+.recent-drawing-row:hover { background: var(--bg-alt); }
+.recent-row-left  { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
+.recent-row-num   { font-weight: 700; color: var(--accent); font-size: 0.88rem; font-family: 'JetBrains Mono', monospace; }
+.recent-row-desc  { font-size: 0.8rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.recent-row-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+
+/* ===== EMPTY STATE ===== */
+.empty-state {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 56px 24px; gap: 12px; text-align: center;
+}
+.empty-state p { color: var(--text-muted); font-size: 0.88rem; }
+
+/* ===== BADGES ===== */
+.badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+.badge--info    { background: var(--info-bg);    color: var(--info); }
+.badge--success { background: var(--success-bg); color: var(--success); }
+.badge--warning { background: var(--warning-bg); color: var(--warning); }
+.badge--danger  { background: var(--danger-bg);  color: var(--danger); }
+.badge--gray    { background: var(--bg-alt);      color: var(--text-secondary); }
+.badge--rev { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; font-weight: 700; background: #EFF6FF; color: #1D4ED8; padding: 2px 8px; border-radius: 4px; }
+
+/* ===== BUTTONS ===== */
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 7px; padding: 9px 18px;
+  background: var(--accent); border: 1px solid transparent; border-radius: var(--radius-sm);
+  color: white; font-size: 0.82rem; font-weight: 600; cursor: pointer; text-decoration: none;
+  transition: all var(--transition); white-space: nowrap;
+}
+.btn-primary:hover { background: var(--primary); box-shadow: var(--shadow-sm); }
+.btn-secondary {
+  display: inline-flex; align-items: center; gap: 7px; padding: 9px 18px;
+  background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.3);
+  border-radius: var(--radius-sm); color: white; font-size: 0.82rem; font-weight: 600;
+  cursor: pointer; transition: all var(--transition); white-space: nowrap;
+}
+.btn-secondary:hover { background: rgba(255,255,255,0.2); }
+.btn-outline {
+  display: inline-flex; align-items: center; gap: 7px; padding: 8px 14px;
+  background: transparent; border: 1px solid var(--border); border-radius: var(--radius-sm);
+  color: var(--text-primary); font-size: 0.82rem; font-weight: 500; cursor: pointer;
+  transition: all var(--transition); white-space: nowrap;
+}
+.btn-outline:hover { background: var(--bg-alt); border-color: var(--accent); color: var(--accent); }
+.btn-ghost {
+  display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px;
+  background: transparent; border: none; border-radius: var(--radius-sm);
+  color: var(--text-secondary); font-size: 0.8rem; font-weight: 500;
+  cursor: pointer; transition: all var(--transition);
+}
+.btn-ghost:hover { background: var(--bg-alt); color: var(--text-primary); }
+.btn-danger {
+  display: inline-flex; align-items: center; gap: 7px; padding: 9px 18px;
+  background: var(--danger-bg); border: 1px solid #FCA5A5; border-radius: var(--radius-sm);
+  color: var(--danger); font-size: 0.82rem; font-weight: 600; cursor: pointer;
+  transition: all var(--transition);
+}
+.btn-danger:hover { background: var(--danger); color: white; }
+.btn-sm   { padding: 6px 12px; font-size: 0.78rem; }
+.btn-full { width: 100%; justify-content: center; }
+.mt-8  { margin-top: 8px; }
+.mt-16 { margin-top: 16px; }
+.mt-24 { margin-top: 24px; }
+
+/* ===== FORMS ===== */
+.form-select {
+  padding: 8px 28px 8px 10px; background: var(--card-bg); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); color: var(--text-primary); font-size: 0.82rem; font-family: inherit;
+  cursor: pointer; outline: none; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%236B7280' d='M1.41 0L6 4.58 10.59 0 12 1.41l-6 6-6-6z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 10px center;
+  transition: border-color var(--transition);
+}
+.form-select:focus { border-color: var(--accent); }
+.form-select--sm { padding: 6px 24px 6px 8px; font-size: 0.78rem; }
+
+/* ===== DROP ZONE ===== */
+.drop-zone {
+  border: 2px dashed var(--border); border-radius: var(--radius);
+  padding: 48px 24px; text-align: center; transition: all var(--transition);
+  cursor: pointer; background: var(--bg-alt); margin: 20px;
+}
+.drop-zone:hover, .drop-zone.drag-over { border-color: var(--accent); background: var(--info-bg); }
+.drop-zone.drag-over { transform: scale(1.01); }
+.drop-zone-inner { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.drop-zone-icon { margin-bottom: 4px; }
+.drop-zone-text h4 { font-size: 1rem; font-weight: 600; color: var(--text-primary); }
+.drop-zone-text p  { font-size: 0.82rem; color: var(--text-muted); }
+.drop-zone-hint    { font-size: 0.72rem; color: var(--text-muted); }
+
+/* ===== UPLOAD QUEUE ===== */
+.upload-queue { margin: 0 20px 20px; border: 1px solid var(--border-light); border-radius: var(--radius-sm); overflow: hidden; }
+.upload-queue-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px; background: var(--bg-alt); border-bottom: 1px solid var(--border-light);
+}
+.upload-queue-title { font-size: 0.8rem; font-weight: 600; color: var(--text-primary); }
+.upload-item {
+  display: grid; grid-template-columns: 1fr 120px 90px 80px auto;
+  align-items: center; gap: 12px; padding: 12px 16px;
+  border-bottom: 1px solid var(--border-light); font-size: 0.78rem; animation: fadeInUp 0.2s ease;
+}
+.upload-item:last-child { border-bottom: none; }
+.upload-item-name { font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.upload-item-num  { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--accent); }
+.upload-item-rev  { text-align: center; }
+.progress-bar-wrapper { width: 80px; }
+.progress-bar { height: 4px; border-radius: 2px; background: var(--border); overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 2px; background: var(--accent); transition: width 0.3s ease; }
+.upload-status { display: flex; align-items: center; gap: 5px; font-size: 0.72rem; font-weight: 600; white-space: nowrap; }
+.status-success    { color: var(--success); }
+.status-error      { color: var(--danger); }
+.status-processing { color: var(--warning); }
+
+/* ===== SEARCH BAR ===== */
+.search-bar-wrapper { position: relative; margin-bottom: 24px; }
+.search-bar {
+  display: flex; align-items: center; background: var(--card-bg);
+  border: 1.5px solid var(--border); border-radius: var(--radius);
+  box-shadow: var(--shadow-sm); transition: border-color var(--transition), box-shadow var(--transition); overflow: hidden;
+}
+.search-bar:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,91,172,0.12); }
+.search-icon { flex-shrink: 0; color: var(--text-muted); margin-left: 14px; }
+.search-input {
+  flex: 1; padding: 14px 12px; background: transparent; border: none; outline: none;
+  font-size: 0.95rem; color: var(--text-primary); font-family: inherit;
+}
+.search-input::placeholder { color: var(--text-muted); }
+.search-clear { flex-shrink: 0; padding: 0 12px; background: transparent; border: none; cursor: pointer; color: var(--text-muted); transition: color var(--transition); }
+.search-clear:hover { color: var(--danger); }
+.search-suggestions {
+  position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 50;
+  background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg); overflow: hidden; display: none;
+}
+.search-suggestion-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; cursor: pointer; transition: background var(--transition); font-size: 0.82rem; }
+.search-suggestion-item:hover { background: var(--bg-alt); }
+.suggestion-num  { font-weight: 700; color: var(--accent); font-family: 'JetBrains Mono', monospace; }
+.suggestion-desc { color: var(--text-secondary); }
+
+/* ===== SEARCH RESULTS ===== */
+.search-results { display: flex; flex-direction: column; gap: 20px; }
+.search-result-card {
+  background: var(--card-bg); border: 1px solid var(--border-light); border-radius: var(--radius);
+  box-shadow: var(--shadow-sm); overflow: hidden; animation: fadeInUp 0.2s ease; transition: box-shadow var(--transition);
+}
+.search-result-card:hover { box-shadow: var(--shadow-md); }
+.result-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  padding: 18px 20px; background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+  color: white; gap: 16px;
+}
+.result-number { font-size: 1.3rem; font-weight: 800; font-family: 'JetBrains Mono', monospace; letter-spacing: -0.02em; }
+.result-desc   { font-size: 0.82rem; color: rgba(255,255,255,0.8); margin-top: 3px; }
+.result-badges { display: flex; gap: 6px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
+.result-badge  { padding: 3px 10px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.3); color: white; text-transform: uppercase; letter-spacing: 0.05em; }
+.result-meta   { display: flex; flex-wrap: wrap; gap: 0; padding: 0 20px; border-bottom: 1px solid var(--border-light); }
+.result-meta-item { display: flex; flex-direction: column; padding: 12px 20px 12px 0; margin-right: 20px; border-right: 1px solid var(--border-light); }
+.result-meta-item:last-child { border-right: none; }
+.result-meta-label { font-size: 0.67rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); }
+.result-meta-value { font-size: 0.85rem; font-weight: 600; color: var(--text-primary); margin-top: 2px; }
+.result-body { display: flex; gap: 20px; padding: 16px 20px; flex-wrap: wrap; }
+.result-dim-section { flex: 1; min-width: 260px; }
+.result-dim-title { font-size: 0.78rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; }
+.result-actions { display: flex; gap: 8px; padding: 12px 20px; border-top: 1px solid var(--border-light); background: var(--bg-alt); }
+
+/* ===== DIM BADGES ===== */
+.dim-badges { display: flex; flex-wrap: wrap; gap: 6px; }
+.dim-badge {
+  padding: 4px 10px; background: var(--info-bg); border: 1px solid rgba(0,91,172,0.15);
+  border-radius: 20px; font-size: 0.75rem; font-weight: 600; color: var(--accent);
+  font-family: 'JetBrains Mono', monospace; cursor: default; transition: all var(--transition);
+}
+.dim-badge:hover { background: var(--accent); color: white; transform: translateY(-1px); }
+
+/* ===== DATA TABLE ===== */
+.table-wrapper { overflow-x: auto; }
+.data-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.data-table th {
+  padding: 10px 14px; text-align: left; background: var(--bg-alt);
+  border-bottom: 2px solid var(--border); font-weight: 600; font-size: 0.75rem;
+  text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); white-space: nowrap;
+}
+.data-table th.sortable { cursor: pointer; user-select: none; }
+.data-table th.sortable:hover { color: var(--accent); }
+.data-table td { padding: 11px 14px; border-bottom: 1px solid var(--border-light); color: var(--text-primary); vertical-align: middle; }
+.data-table tbody tr:hover { background: var(--bg-alt); }
+.data-table tbody tr:last-child td { border-bottom: none; }
+.table-empty { text-align: center; color: var(--text-muted); padding: 40px; }
+.sort-icon { color: var(--text-muted); font-size: 0.7rem; }
+.sort-asc  .sort-icon::after { content: '▲'; }
+.sort-desc .sort-icon::after { content: '▼'; }
+.table-actions { display: flex; gap: 4px; }
+.tbl-btn {
+  padding: 4px 9px; border-radius: 4px; border: 1px solid var(--border);
+  background: var(--card-bg); color: var(--text-secondary); font-size: 0.72rem;
+  font-weight: 500; cursor: pointer; transition: all var(--transition); white-space: nowrap;
+}
+.tbl-btn:hover { background: var(--accent); color: white; border-color: var(--accent); }
+.tbl-btn--danger:hover { background: var(--danger); border-color: var(--danger); }
+.db-search-bar { display: flex; align-items: center; gap: 8px; padding: 12px 16px; border-bottom: 1px solid var(--border-light); }
+.db-search-input {
+  flex: 1; padding: 7px 12px; background: var(--bg-alt); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); outline: none; font-size: 0.82rem;
+  color: var(--text-primary); font-family: inherit; transition: border-color var(--transition);
+}
+.db-search-input:focus { border-color: var(--accent); }
+.table-footer { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-top: 1px solid var(--border-light); font-size: 0.78rem; color: var(--text-muted); }
+.pagination { display: flex; gap: 4px; }
+.page-btn {
+  width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+  border-radius: 4px; border: 1px solid var(--border); background: var(--card-bg);
+  color: var(--text-secondary); font-size: 0.75rem; cursor: pointer; transition: all var(--transition);
+}
+.page-btn:hover { border-color: var(--accent); color: var(--accent); }
+.page-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+.filter-group { display: flex; gap: 6px; flex-wrap: wrap; }
+.export-dropdown-wrapper { position: relative; }
+#exportMenuBtn { position: relative; }
+.export-dropdown {
+  position: absolute; top: calc(100% + 4px); right: 0; z-index: 50;
+  background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg); overflow: hidden; min-width: 140px;
+}
+.export-dropdown button {
+  display: block; width: 100%; padding: 10px 14px; background: transparent; border: none;
+  text-align: left; font-size: 0.82rem; font-weight: 500; color: var(--text-primary);
+  cursor: pointer; transition: background var(--transition); font-family: inherit;
+}
+.export-dropdown button:hover { background: var(--bg-alt); color: var(--accent); }
+
+/* ===== COMPARE ===== */
+.compare-selectors { display: grid; grid-template-columns: 1fr auto 1fr; gap: 16px; align-items: center; }
+.compare-selector-card { padding: 16px 20px; }
+.compare-vs {
+  display: flex; align-items: center; justify-content: center;
+  width: 44px; height: 44px; background: var(--accent); border-radius: 50%;
+  color: white; font-weight: 800; font-size: 0.75rem; box-shadow: var(--shadow-md); flex-shrink: 0;
+}
+.compare-result { margin-top: 24px; }
+.compare-grid   { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.compare-header { text-align: center; padding: 16px; background: var(--primary); color: white; border-radius: var(--radius-sm); margin-bottom: 16px; }
+.compare-header h3 { font-size: 1.1rem; font-weight: 700; }
+.compare-header p  { font-size: 0.78rem; color: rgba(255,255,255,0.75); }
+.compare-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.compare-table th { padding: 9px 12px; background: var(--bg-alt); border-bottom: 2px solid var(--border); font-weight: 600; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); }
+.compare-table td { padding: 9px 12px; border-bottom: 1px solid var(--border-light); }
+.compare-table tr.dim-same td { background: rgba(22,163,74,0.06); }
+.compare-table tr.dim-diff td { background: rgba(220,38,38,0.06); }
+.compare-table tr.dim-same td:last-child { color: var(--success); font-weight: 600; }
+.compare-table tr.dim-diff td:last-child { color: var(--danger);  font-weight: 600; }
+.compare-legend { display: flex; gap: 16px; margin-bottom: 12px; }
+.legend-item    { display: flex; align-items: center; gap: 6px; font-size: 0.75rem; color: var(--text-secondary); }
+.legend-dot     { width: 10px; height: 10px; border-radius: 2px; }
+.legend-dot--same { background: var(--success); }
+.legend-dot--diff { background: var(--danger); }
+
+/* ===== SETTINGS ===== */
+.settings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+.settings-card  { padding: 0; }
+.settings-group { padding: 16px 20px; display: flex; flex-direction: column; gap: 10px; }
+.settings-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 4px; }
+.theme-options  { display: flex; flex-direction: column; gap: 6px; }
+.theme-btn {
+  display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+  background: var(--bg-alt); border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  color: var(--text-primary); font-size: 0.82rem; font-weight: 500;
+  cursor: pointer; text-align: left; font-family: inherit; transition: all var(--transition);
+}
+.theme-btn:hover  { border-color: var(--accent); color: var(--accent); }
+.theme-btn.active { border-color: var(--accent); background: var(--info-bg); color: var(--accent); font-weight: 600; }
+.settings-action-btn { margin-bottom: 0; }
+.about-info { padding: 4px 20px 20px; }
+.about-row {
+  display: flex; justify-content: space-between;
+  padding: 9px 0; border-bottom: 1px solid var(--border-light); font-size: 0.82rem;
+}
+.about-row:last-child { border-bottom: none; }
+.about-row span:first-child { color: var(--text-muted); }
+.about-row span:last-child  { color: var(--text-primary); font-weight: 500; }
+
+/* ===== MODAL ===== */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(5,15,30,0.7); backdrop-filter: blur(4px);
+  display: flex; align-items: flex-start; justify-content: center;
+  padding: 20px; overflow-y: auto; animation: fadeIn 0.2s ease;
+}
+.modal {
+  background: var(--card-bg); border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl); width: 100%; max-width: 1100px;
+  overflow: hidden; animation: slideUp 0.25s ease; margin: auto;
+}
+.modal--sm    { max-width: 440px; }
+.modal--large { max-width: 1200px; min-height: 500px; }
+.modal-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; background: var(--primary); color: white; gap: 16px; }
+.modal-title-group { display: flex; flex-direction: column; gap: 2px; }
+.modal-badge  { font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(255,255,255,0.6); }
+.modal-title  { font-size: 1.25rem; font-weight: 800; font-family: 'JetBrains Mono', monospace; letter-spacing: -0.01em; }
+.modal-header-actions { display: flex; gap: 6px; }
+.modal-close-btn:hover { background: rgba(255,50,50,0.2) !important; color: #ff6b6b !important; }
+.modal-body   { display: flex; gap: 0; height: calc(90vh - 70px); overflow: hidden; }
+.modal-left   { width: 380px; flex-shrink: 0; overflow-y: auto; padding: 20px; border-right: 1px solid var(--border-light); display: flex; flex-direction: column; gap: 20px; }
+.modal-right  { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.modal-body-simple { padding: 20px 24px; }
+.modal-body-simple p { font-size: 0.9rem; margin-bottom: 20px; }
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+.modal-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 1px solid var(--border-light); border-radius: var(--radius-sm); overflow: hidden; }
+.info-item { padding: 10px 12px; border-right: 1px solid var(--border-light); border-bottom: 1px solid var(--border-light); }
+.info-item:nth-child(even)    { border-right: none; }
+.info-item:nth-last-child(-n+2) { border-bottom: none; }
+.info-label { font-size: 0.67rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); }
+.info-value { font-size: 0.85rem; font-weight: 600; color: var(--text-primary); margin-top: 3px; }
+.modal-section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.modal-section-title  { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); }
+.dim-search-input {
+  padding: 5px 10px; background: var(--bg-alt); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); outline: none; font-size: 0.75rem;
+  color: var(--text-primary); font-family: inherit; width: 140px; transition: border-color var(--transition);
+}
+.dim-search-input:focus { border-color: var(--accent); width: 160px; }
+.notes-content { padding: 12px 14px; background: var(--bg-alt); border-radius: var(--radius-sm); font-size: 0.8rem; color: var(--text-secondary); line-height: 1.6; white-space: pre-wrap; }
+
+/* ===== PDF VIEWER ===== */
+.pdf-viewer-wrapper { display: flex; flex-direction: column; height: 100%; }
+.pdf-toolbar {
+  display: flex; align-items: center; gap: 4px; padding: 8px 12px;
+  background: var(--bg-alt); border-bottom: 1px solid var(--border-light);
+  flex-shrink: 0; flex-wrap: wrap;
+}
+.pdf-toolbar .icon-btn { background: var(--card-bg); border-color: var(--border); color: var(--text-secondary); width: 30px; height: 30px; }
+.pdf-toolbar .icon-btn:hover { background: var(--accent); color: white; border-color: var(--accent); }
+.pdf-page-info  { font-size: 0.78rem; color: var(--text-secondary); padding: 0 6px; white-space: nowrap; }
+.pdf-zoom-level { font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); min-width: 40px; text-align: center; }
+.pdf-toolbar-sep { width: 1px; height: 20px; background: var(--border); margin: 0 4px; }
+.pdf-canvas-wrapper { flex: 1; overflow: auto; display: flex; align-items: flex-start; justify-content: center; padding: 16px; background: #2D2D2D; position: relative; }
+.pdf-canvas-wrapper canvas { box-shadow: var(--shadow-lg); max-width: 100%; }
+.pdf-loading { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: rgba(255,255,255,0.6); font-size: 0.85rem; background: rgba(0,0,0,0.5); z-index: 10; }
+
+/* ===== SPINNER ===== */
+.spinner    { width: 28px; height: 28px; border: 3px solid rgba(255,255,255,0.2); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; }
+.spinner--sm { width: 16px; height: 16px; border: 2px solid rgba(0,91,172,0.2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
+
+/* ===== TOAST ===== */
+.toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 300; display: flex; flex-direction: column; gap: 8px; max-width: 360px; }
+.toast {
+  display: flex; align-items: flex-start; gap: 10px; padding: 13px 16px;
+  background: var(--card-bg); border: 1px solid var(--border); border-left: 4px solid var(--accent);
+  border-radius: var(--radius-sm); box-shadow: var(--shadow-lg); font-size: 0.82rem;
+  animation: slideInRight 0.25s ease; transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.toast--success { border-left-color: var(--success); }
+.toast--error   { border-left-color: var(--danger); }
+.toast--warning { border-left-color: var(--warning); }
+.toast-icon  { flex-shrink: 0; margin-top: 1px; }
+.toast-body  { flex: 1; }
+.toast-title { font-weight: 600; color: var(--text-primary); }
+.toast-msg   { color: var(--text-secondary); margin-top: 2px; }
+.toast-close { background: none; border: none; cursor: pointer; color: var(--text-muted); padding: 0; font-size: 1rem; line-height: 1; }
+.toast-close:hover { color: var(--text-primary); }
+.toast.hiding { opacity: 0; transform: translateX(20px); }
+
+/* ===== FOOTER ===== */
+.app-footer {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 90;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 24px; background: var(--primary); border-top: 1px solid rgba(255,255,255,0.08);
+  font-size: 0.72rem; color: rgba(255,255,255,0.6);
+}
+.footer-content { display: flex; align-items: center; gap: 8px; }
+.footer-brand   { color: rgba(255,255,255,0.9); font-weight: 600; }
+.footer-sep     { color: rgba(255,255,255,0.3); }
+.footer-right   { color: rgba(255,255,255,0.5); }
+
+/* ===== ANIMATIONS ===== */
+@keyframes fadeIn       { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeInUp     { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeInDown   { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slideUp      { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slideInRight { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes spin         { to { transform: rotate(360deg); } }
+
+/* ===== PRINT STYLES ===== */
+@media print {
+  .app-header, .app-footer, .hero-banner, .section-actions, .modal-overlay, .toast-container { display: none !important; }
+  .main-content { padding: 0; }
+  .card { box-shadow: none; border: 1px solid #ccc; }
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 900px) {
+  .hero-visual { display: none; }
+  .hero-banner { padding: 28px 20px; }
+  .hero-title  { font-size: 1.6rem; }
+  .modal-body  { flex-direction: column; height: auto; max-height: 90vh; overflow-y: auto; }
+  .modal-left  { width: 100%; border-right: none; border-bottom: 1px solid var(--border-light); max-height: 50vh; overflow-y: auto; }
+  .modal-right { min-height: 300px; }
+  .compare-grid      { grid-template-columns: 1fr; }
+  .compare-selectors { grid-template-columns: 1fr; }
+  .compare-vs        { display: none; }
+  .upload-item       { grid-template-columns: 1fr 1fr; }
+  .progress-bar-wrapper { display: none; }
+}
+@media (max-width: 640px) {
+  .main-nav .nav-btn span:not(.nav-icon) { display: none; }
+  .header-subtitle { display: none; }
+  .stats-grid   { grid-template-columns: 1fr 1fr; }
+  .main-content { padding: 16px 14px 60px; }
+  .modal        { border-radius: var(--radius); }
+  .result-meta-item { padding: 10px 12px 10px 0; margin-right: 12px; }
+}
+@media (max-width: 480px) {
+  .stats-grid   { grid-template-columns: 1fr; }
+  .hero-actions { flex-direction: column; }
+  .hero-title   { font-size: 1.35rem; }
+}
+</style>
+</head>
+<body>
+
+  <!-- ===== HEADER ===== -->
+  <header class="app-header" id="appHeader">
+    <div class="header-brand">
+      <div class="header-logo">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="28" height="28" rx="6" fill="#005BAC"/>
+          <path d="M5 14C5 9.03 9.03 5 14 5s9 4.03 9 9-4.03 9-9 9-9-4.03-9-9z" stroke="white" stroke-width="1.5" fill="none"/>
+          <circle cx="14" cy="14" r="3.5" fill="white"/>
+          <path d="M14 8v2M14 18v2M8 14h2M18 14h2" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="header-title-group">
+        <span class="header-title">Motor Outline DB</span>
+        <span class="header-subtitle">Engineering Drawing Management</span>
+      </div>
+    </div>
+
+    <nav class="main-nav" id="mainNav">
+      <button class="nav-btn active" data-section="dashboard" title="Dashboard">
+        <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor"><path d="M2 10a8 8 0 1116 0 8 8 0 01-16 0zm6.39-2.908a2.5 2.5 0 113.32 3.752L13 12.5h-2.5v-2.5l-2.11-2.908z"/></svg>
+        Dashboard
+      </button>
+      <button class="nav-btn" data-section="upload" title="Upload Drawings">
+        <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
+        Upload
+      </button>
+      <button class="nav-btn" data-section="search" title="Search Drawings">
+        <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/></svg>
+        Search
+      </button>
+      <button class="nav-btn" data-section="compare" title="Compare Drawings">
+        <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor"><path d="M5 4a1 1 0 00-2 0v7.268a2 2 0 000 3.464V16a1 1 0 102 0v-1.268a2 2 0 000-3.464V4zM11 4a1 1 0 10-2 0v1.268a2 2 0 000 3.464V16a1 1 0 102 0V8.732a2 2 0 000-3.464V4zM16 3a1 1 0 011 1v7.268a2 2 0 010 3.464V16a1 1 0 11-2 0v-1.268a2 2 0 010-3.464V4a1 1 0 011-1z"/></svg>
+        Compare
+      </button>
+      <button class="nav-btn" data-section="database" title="Database">
+        <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor"><path d="M3 12v3c0 1.657 3.134 3 7 3s7-1.343 7-3v-3c0 1.657-3.134 3-7 3s-7-1.343-7-3z"/><path d="M3 7v3c0 1.657 3.134 3 7 3s7-1.343 7-3V7c0 1.657-3.134 3-7 3S3 8.657 3 7z"/><path d="M17 5c0 1.657-3.134 3-7 3S3 6.657 3 5s3.134-3 7-3 7 1.343 7 3z"/></svg>
+        Database
+      </button>
+      <button class="nav-btn" data-section="settings" title="Settings">
+        <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/></svg>
+        Settings
+      </button>
+    </nav>
+
+    <div class="header-actions">
+      <button class="icon-btn" id="themeToggleBtn" title="Toggle Dark Mode">
+        <svg id="sunIcon" viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"/></svg>
+        <svg id="moonIcon" viewBox="0 0 20 20" fill="currentColor" width="18" height="18" style="display:none"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/></svg>
+      </button>
+      <div class="db-count-badge" id="dbCountBadge">
+        <span id="dbCountNum">0</span> Drawings
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== HERO BANNER ===== -->
+  <div class="hero-banner" id="heroBanner">
+    <div class="hero-content">
+      <div class="hero-badge">
+        <svg viewBox="0 0 16 16" fill="currentColor" width="12" height="12"><path d="M6 2a2 2 0 00-2 2v1H2a1 1 0 000 2h.5l1 7H12.5l1-7H14a1 1 0 100-2h-2V4a2 2 0 00-2-2H6zm3 6a1 1 0 10-2 0v2a1 1 0 002 0V8zm-4 0a1 1 0 112 0v2a1 1 0 11-2 0V8z"/></svg>
+        Engineering Drawing Management
+      </div>
+      <h1 class="hero-title">Motor Outline Dimension Database</h1>
+      <p class="hero-subtitle">Search, analyze and compare SolidWorks outline drawings with automated dimension extraction</p>
+      <div class="hero-actions">
+        <button class="btn-primary" data-nav="upload">
+          <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
+          Upload Drawing
+        </button>
+        <button class="btn-secondary" data-nav="search">
+          <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/></svg>
+          Search Database
+        </button>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <svg width="280" height="200" viewBox="0 0 280 200" fill="none" xmlns="http://www.w3.org/2000/svg" opacity="0.15">
+        <rect x="20" y="20" width="240" height="160" rx="4" stroke="white" stroke-width="1.5"/>
+        <rect x="30" y="30" width="130" height="90" rx="2" stroke="white" stroke-width="1"/>
+        <circle cx="95" cy="75" r="30" stroke="white" stroke-width="1"/>
+        <line x1="60" y1="75" x2="130" y2="75" stroke="white" stroke-width="0.8"/>
+        <line x1="95" y1="40" x2="95" y2="110" stroke="white" stroke-width="0.8"/>
+        <rect x="175" y="30" width="75" height="20" rx="2" stroke="white" stroke-width="1"/>
+        <rect x="175" y="60" width="75" height="60" rx="2" stroke="white" stroke-width="1"/>
+        <line x1="190" y1="75" x2="240" y2="75" stroke="white" stroke-width="0.5"/>
+        <line x1="190" y1="85" x2="240" y2="85" stroke="white" stroke-width="0.5"/>
+        <line x1="190" y1="95" x2="240" y2="95" stroke="white" stroke-width="0.5"/>
+        <line x1="190" y1="105" x2="240" y2="105" stroke="white" stroke-width="0.5"/>
+        <rect x="30" y="130" width="220" height="40" rx="2" stroke="white" stroke-width="1"/>
+        <line x1="100" y1="130" x2="100" y2="170" stroke="white" stroke-width="0.5"/>
+        <line x1="170" y1="130" x2="170" y2="170" stroke="white" stroke-width="0.5"/>
+        <line x1="30" y1="150" x2="250" y2="150" stroke="white" stroke-width="0.5"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <main class="main-content">
+
+    <!-- DASHBOARD -->
+    <section id="section-dashboard" class="content-section active">
+      <div class="section-header">
+        <h2 class="section-title">Dashboard</h2>
+        <div class="section-actions">
+          <button class="btn-sm btn-outline" data-nav="upload">
+            <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14"><path fill-rule="evenodd" d="M8 2a.5.5 0 01.5.5v5h5a.5.5 0 010 1h-5v5a.5.5 0 01-1 0v-5h-5a.5.5 0 010-1h5v-5A.5.5 0 018 2z"/></svg>
+            Add Drawing
+          </button>
+        </div>
+      </div>
+      <div class="stats-grid" id="statsGrid">
+        <div class="stat-card"><div class="stat-icon stat-icon--blue"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/></svg></div><div class="stat-content"><div class="stat-value" id="statTotalDrawings">0</div><div class="stat-label">Total Drawings</div><div class="stat-change" id="statTotalChange">No drawings yet</div></div></div>
+        <div class="stat-card"><div class="stat-icon stat-icon--teal"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/></svg></div><div class="stat-content"><div class="stat-value" id="statFrames">0</div><div class="stat-label">Unique Frames</div><div class="stat-change" id="statFramesChange">—</div></div></div>
+        <div class="stat-card"><div class="stat-icon stat-icon--purple"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg></div><div class="stat-content"><div class="stat-value" id="statDimensions">0</div><div class="stat-label">Dimensions Extracted</div><div class="stat-change" id="statDimensionsChange">—</div></div></div>
+        <div class="stat-card"><div class="stat-icon stat-icon--orange"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg></div><div class="stat-content"><div class="stat-value" id="statRecent">—</div><div class="stat-label">Recent Upload</div><div class="stat-change" id="statRecentChange">—</div></div></div>
+        <div class="stat-card"><div class="stat-icon stat-icon--green"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg></div><div class="stat-content"><div class="stat-value" id="statRevision">—</div><div class="stat-label">Latest Revision</div><div class="stat-change" id="statRevisionChange">—</div></div></div>
+      </div>
+      <div class="card mt-24">
+        <div class="card-header">
+          <h3 class="card-title">Recent Drawings</h3>
+          <button class="btn-sm btn-ghost" data-nav="database">View All</button>
+        </div>
+        <div id="recentDrawingsList">
+          <div class="empty-state">
+            <svg viewBox="0 0 48 48" fill="none" width="48" height="48"><rect width="48" height="48" rx="8" fill="#EFF6FF"/><path d="M14 12h20a2 2 0 012 2v20a2 2 0 01-2 2H14a2 2 0 01-2-2V14a2 2 0 012-2z" stroke="#003366" stroke-width="1.5"/><path d="M18 20h12M18 24h8M18 28h10" stroke="#003366" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <p>No drawings uploaded yet.</p>
+            <button class="btn-primary btn-sm mt-8" data-nav="upload">Upload First Drawing</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- UPLOAD -->
+    <section id="section-upload" class="content-section">
+      <div class="section-header"><h2 class="section-title">Upload Drawings</h2></div>
+      <div class="card">
+        <div class="card-header"><h3 class="card-title">Add PDF Drawings</h3><span class="badge badge--info">PDF Only</span></div>
+        <div class="drop-zone" id="dropZone">
+          <div class="drop-zone-inner">
+            <div class="drop-zone-icon">
+              <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="64" height="64" rx="12" fill="#EFF6FF"/>
+                <path d="M32 14C22.059 14 14 22.059 14 32s8.059 18 18 18 18-8.059 18-18S41.941 14 32 14zm0 4c7.732 0 14 6.268 14 14s-6.268 14-14 14-14-6.268-14-14 6.268-14 14-14z" fill="#005BAC" opacity="0.3"/>
+                <path d="M32 24v12M26 30l6-6 6 6" stroke="#003366" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M24 40h16" stroke="#003366" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="drop-zone-text"><h4>Drag &amp; Drop PDF Files Here</h4><p>or click to browse your files</p></div>
+            <button class="btn-primary" id="browseBtn">Browse Files</button>
+            <p class="drop-zone-hint">Accepts PDF files only · Multiple files supported</p>
+          </div>
+          <input type="file" id="fileInput" accept=".pdf" multiple hidden />
+        </div>
+        <div id="uploadQueue" class="upload-queue" style="display:none">
+          <div class="upload-queue-header">
+            <span class="upload-queue-title">Processing Queue</span>
+            <button class="btn-sm btn-ghost" id="clearQueueBtn">Clear All</button>
+          </div>
+          <div id="uploadItems"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SEARCH -->
+    <section id="section-search" class="content-section">
+      <div class="section-header"><h2 class="section-title">Search Drawings</h2></div>
+      <div class="search-bar-wrapper">
+        <div class="search-bar">
+          <svg class="search-icon" viewBox="0 0 20 20" fill="currentColor" width="20" height="20"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/></svg>
+          <input type="text" id="searchInput" class="search-input" placeholder="Search Drawing Number, Frame, Description..." autocomplete="off" />
+          <button class="search-clear" id="searchClear" style="display:none">
+            <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+          </button>
+        </div>
+        <div class="search-suggestions" id="searchSuggestions"></div>
+      </div>
+      <div id="searchResults" class="search-results"></div>
+    </section>
+
+    <!-- COMPARE -->
+    <section id="section-compare" class="content-section">
+      <div class="section-header"><h2 class="section-title">Compare Drawings</h2></div>
+      <div class="compare-selectors">
+        <div class="card compare-selector-card"><h3 class="card-title">Drawing A</h3><select class="form-select" id="compareSelectA"><option value="">Select Drawing A...</option></select></div>
+        <div class="compare-vs"><span>VS</span></div>
+        <div class="card compare-selector-card"><h3 class="card-title">Drawing B</h3><select class="form-select" id="compareSelectB"><option value="">Select Drawing B...</option></select></div>
+      </div>
+      <button class="btn-primary btn-full mt-16" id="compareBtn">
+        <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path d="M5 4a1 1 0 00-2 0v7.268a2 2 0 000 3.464V16a1 1 0 102 0v-1.268a2 2 0 000-3.464V4zM11 4a1 1 0 10-2 0v1.268a2 2 0 000 3.464V16a1 1 0 102 0V8.732a2 2 0 000-3.464V4zM16 3a1 1 0 011 1v7.268a2 2 0 010 3.464V16a1 1 0 11-2 0v-1.268a2 2 0 010-3.464V4a1 1 0 011-1z"/></svg>
+        Compare Drawings
+      </button>
+      <div id="compareResult" class="compare-result" style="display:none"></div>
+    </section>
+
+    <!-- DATABASE -->
+    <section id="section-database" class="content-section">
+      <div class="section-header">
+        <h2 class="section-title">Database</h2>
+        <div class="section-actions">
+          <div class="filter-group">
+            <select class="form-select form-select--sm" id="filterFrame"><option value="">All Frames</option></select>
+            <select class="form-select form-select--sm" id="filterRevision"><option value="">All Revisions</option></select>
+          </div>
+          <button class="btn-sm btn-outline" id="exportMenuBtn">
+            <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14"><path d="M.5 9.9a.5.5 0 01.5.5v2.5a1 1 0 001 1h12a1 1 0 001-1v-2.5a.5.5 0 011 0v2.5a2 2 0 01-2 2H2a2 2 0 01-2-2v-2.5a.5.5 0 01.5-.5z"/><path d="M7.646 11.854a.5.5 0 00.708 0l3-3a.5.5 0 00-.708-.708L8.5 10.293V1.5a.5.5 0 00-1 0v8.793L5.354 8.146a.5.5 0 10-.708.708l3 3z"/></svg>
+            Export
+            <div class="export-dropdown" id="exportDropdown" style="display:none">
+              <button data-export="csv">CSV</button>
+              <button data-export="json">JSON</button>
+              <button data-export="excel">Excel (XLS)</button>
+              <button data-export="print">Print</button>
+            </div>
+          </button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="db-search-bar">
+          <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/></svg>
+          <input type="text" id="dbSearchInput" class="db-search-input" placeholder="Filter table..." />
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table" id="dbTable">
+            <thead><tr>
+              <th data-col="drawingNumber" class="sortable">Drawing No. <span class="sort-icon">⇅</span></th>
+              <th data-col="frame" class="sortable">Frame <span class="sort-icon">⇅</span></th>
+              <th data-col="revision" class="sortable">Rev <span class="sort-icon">⇅</span></th>
+              <th data-col="description" class="sortable">Description <span class="sort-icon">⇅</span></th>
+              <th data-col="uploadDate" class="sortable">Upload Date <span class="sort-icon">⇅</span></th>
+              <th>Actions</th>
+            </tr></thead>
+            <tbody id="dbTableBody"><tr><td colspan="6" class="table-empty">No drawings in database</td></tr></tbody>
+          </table>
+        </div>
+        <div class="table-footer">
+          <span id="dbTableCount">0 records</span>
+          <div id="dbPagination" class="pagination"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section id="section-settings" class="content-section">
+      <div class="section-header"><h2 class="section-title">Settings</h2></div>
+      <div class="settings-grid">
+        <div class="card settings-card">
+          <div class="card-header"><h3 class="card-title">Appearance</h3></div>
+          <div class="settings-group">
+            <label class="settings-label">Theme</label>
+            <div class="theme-options">
+              <button class="theme-btn active" id="themeLight"><svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0z" clip-rule="evenodd"/></svg> Light Mode</button>
+              <button class="theme-btn" id="themeDark"><svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/></svg> Dark Mode</button>
+              <button class="theme-btn" id="themeEngineering"><svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/></svg> Engineering Blue</button>
+            </div>
+          </div>
+        </div>
+        <div class="card settings-card">
+          <div class="card-header"><h3 class="card-title">Data Management</h3></div>
+          <div class="settings-group">
+            <button class="btn-outline btn-full settings-action-btn" id="exportDbBtn"><svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/></svg> Export Database (JSON)</button>
+            <button class="btn-outline btn-full settings-action-btn" id="importDbBtn"><svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg> Import Database (JSON)</button>
+            <input type="file" id="importFileInput" accept=".json" hidden />
+            <button class="btn-danger btn-full settings-action-btn" id="clearDbBtn"><svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/></svg> Clear All Database</button>
+          </div>
+        </div>
+        <div class="card settings-card">
+          <div class="card-header"><h3 class="card-title">About</h3></div>
+          <div class="about-info">
+            <div class="about-row"><span>Application</span><span>Motor Outline Dimension Database</span></div>
+            <div class="about-row"><span>Version</span><span>2.0.0</span></div>
+            <div class="about-row"><span>PDF Library</span><span>PDF.js 3.11.174</span></div>
+            <div class="about-row"><span>Storage</span><span>Browser LocalStorage</span></div>
+            <div class="about-row"><span>Built For</span><span>Mechanical Design Engineers</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===== DRAWING DETAIL MODAL ===== -->
+  <div class="modal-overlay" id="drawingModal" style="display:none">
+    <div class="modal modal--large" id="drawingModalContent">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="modal-badge">Drawing Detail</span>
+          <h2 class="modal-title" id="modalDrawingNumber">—</h2>
+        </div>
+        <div class="modal-header-actions">
+          <button class="icon-btn" id="modalDownloadBtn" title="Download PDF"><svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/></svg></button>
+          <button class="icon-btn" id="modalFullscreenBtn" title="Fullscreen"><svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path fill-rule="evenodd" d="M3 4a1 1 0 011-1h4a1 1 0 010 2H6.414l2.293 2.293a1 1 0 01-1.414 1.414L5 6.414V8a1 1 0 01-2 0V4zm9 1a1 1 0 010-2h4a1 1 0 011 1v4a1 1 0 01-2 0V6.414l-2.293 2.293a1 1 0 11-1.414-1.414L13.586 5H12zm-9 7a1 1 0 012 0v1.586l2.293-2.293a1 1 0 011.414 1.414L6.414 15H8a1 1 0 010 2H4a1 1 0 01-1-1v-4zm13-1a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 010-2h1.586l-2.293-2.293a1 1 0 011.414-1.414L15 13.586V12a1 1 0 011-1z" clip-rule="evenodd"/></svg></button>
+          <button class="icon-btn modal-close-btn" id="modalCloseBtn" title="Close"><svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg></button>
+        </div>
+      </div>
+      <div class="modal-body">
+        <div class="modal-left">
+          <div class="modal-info-grid" id="modalInfoGrid"></div>
+          <div class="modal-section">
+            <div class="modal-section-header">
+              <h3 class="modal-section-title">Dimension Table</h3>
+              <div><input type="text" id="dimSearchInput" class="dim-search-input" placeholder="Filter dimensions..." /></div>
+            </div>
+            <div class="table-wrapper">
+              <table class="data-table dim-table"><thead><tr><th>Dimension</th><th>Value</th></tr></thead><tbody id="modalDimTableBody"></tbody></table>
+            </div>
+          </div>
+          <div class="modal-section" id="generalDimsSection">
+            <h3 class="modal-section-title">General Dimensions</h3>
+            <div class="dim-badges" id="generalDimsBadges"></div>
+          </div>
+          <div class="modal-section" id="modalNotesSection" style="display:none">
+            <h3 class="modal-section-title">Notes</h3>
+            <div class="notes-content" id="modalNotes"></div>
+          </div>
+        </div>
+        <div class="modal-right">
+          <div class="pdf-viewer-wrapper">
+            <div class="pdf-toolbar">
+              <button class="icon-btn" id="pdfPrevPage" title="Previous Page"><svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"/></svg></button>
+              <span class="pdf-page-info"><span id="pdfCurrentPage">1</span> / <span id="pdfTotalPages">1</span></span>
+              <button class="icon-btn" id="pdfNextPage" title="Next Page"><svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg></button>
+              <div class="pdf-toolbar-sep"></div>
+              <button class="icon-btn" id="pdfZoomOut" title="Zoom Out"><svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/></svg></button>
+              <span class="pdf-zoom-level" id="pdfZoomLevel">100%</span>
+              <button class="icon-btn" id="pdfZoomIn" title="Zoom In"><svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/></svg></button>
+              <button class="icon-btn" id="pdfFitWidth" title="Fit Width">W</button>
+              <button class="icon-btn" id="pdfFitPage" title="Fit Page">P</button>
+              <button class="icon-btn" id="pdfRotate" title="Rotate"><svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1z" clip-rule="evenodd"/></svg></button>
+            </div>
+            <div class="pdf-canvas-wrapper" id="pdfCanvasWrapper">
+              <div class="pdf-loading" id="pdfLoading"><div class="spinner"></div><span>Loading PDF...</span></div>
+              <canvas id="pdfCanvas"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== DUPLICATE CONFIRM MODAL ===== -->
+  <div class="modal-overlay" id="duplicateModal" style="display:none">
+    <div class="modal modal--sm">
+      <div class="modal-header">
+        <h3 class="modal-title">Duplicate Drawing Found</h3>
+        <button class="icon-btn modal-close-btn" id="dupModalClose"><svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg></button>
+      </div>
+      <div class="modal-body-simple">
+        <p id="dupModalMessage">A drawing with this number already exists in the database.</p>
+        <div class="modal-actions">
+          <button class="btn-secondary" id="dupModalCancel">Keep Existing</button>
+          <button class="btn-primary" id="dupModalOverwrite">Overwrite</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TOAST NOTIFICATIONS ===== -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="app-footer">
+    <div class="footer-content">
+      <span class="footer-brand">Motor Outline Dimension Database</span>
+      <span class="footer-sep">·</span>
+      <span class="footer-text">Developed for Engineering Drawing Management</span>
+    </div>
+    <div class="footer-right"><span id="footerDbStat">0 drawings in database</span></div>
+  </footer>
+
+<script>
+/**
+ * MOTOR OUTLINE DIMENSION DATABASE
+ * Pure Vanilla JS — No Frameworks
+ * PDF.js + LocalStorage, event delegation (no inline handlers)
+ */
+
+'use strict';
+
+// ============================================================
+// PDF.JS SETUP
+// ============================================================
+if (typeof pdfjsLib !== 'undefined') {
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+}
+
+// ============================================================
+// STORAGE MODULE
+// ============================================================
+const Storage = (() => {
+  const DRAWINGS_KEY = 'motor_db_drawings';
+  const SETTINGS_KEY = 'motor_db_settings';
+  const PDF_PREFIX   = 'motor_pdf_';
+
+  function writeKey(key, value) {
+    try { localStorage.setItem(key, value); return true; }
+    catch (e) {
+      if (e.name === 'QuotaExceededError') Toast.show('Storage is full. Delete old drawings to free space.', 'error', 'Storage Full');
+      return false;
+    }
+  }
+
+  return {
+    getAll() { try { return JSON.parse(localStorage.getItem(DRAWINGS_KEY) || '[]'); } catch { return []; } },
+    save(drawings) { return writeKey(DRAWINGS_KEY, JSON.stringify(drawings)); },
+    add(drawing) {
+      const drawings = this.getAll();
+      const idx = drawings.findIndex(d => d.drawingNumber === drawing.drawingNumber);
+      if (idx > -1) return { conflict: drawings[idx], index: idx };
+      drawings.unshift(drawing);
+      const ok = this.save(drawings);
+      return ok ? { success: true } : { error: true };
+    },
+    overwrite(drawing) {
+      const drawings = this.getAll();
+      const idx = drawings.findIndex(d => d.drawingNumber === drawing.drawingNumber);
+      if (idx > -1) drawings.splice(idx, 1, drawing); else drawings.unshift(drawing);
+      return this.save(drawings);
+    },
+    delete(drawingNumber) { const drawings = this.getAll().filter(d => d.drawingNumber !== drawingNumber); return this.save(drawings); },
+    getByNumber(num) { return this.getAll().find(d => d.drawingNumber === num) || null; },
+    storePDF(drawingNumber, dataUrl) { return writeKey(PDF_PREFIX + drawingNumber, dataUrl); },
+    getPDF(drawingNumber) { return localStorage.getItem(PDF_PREFIX + drawingNumber); },
+    deletePDF(drawingNumber) { localStorage.removeItem(PDF_PREFIX + drawingNumber); },
+    clearAll() {
+      const pdfKeys = [];
+      for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.startsWith(PDF_PREFIX)) pdfKeys.push(k); }
+      pdfKeys.forEach(k => localStorage.removeItem(k));
+      localStorage.removeItem(DRAWINGS_KEY);
+    },
+    getSettings() { try { return JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}'); } catch { return {}; } },
+    saveSettings(s) { localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); },
+  };
+})();
+
+// ============================================================
+// PDF PARSER MODULE
+// ============================================================
+const PDFParser = (() => {
+  async function extractText(file) {
+    const buf = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+    let fullText = '';
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const tc   = await page.getTextContent();
+      fullText += tc.items.map(it => it.str).join(' ') + '\n';
+    }
+    return { pdf, fullText };
+  }
+
+  function parseDrawingNumber(text) {
+    const patterns = [/\b([A-Z]{1,4}\d{4,8}[A-Z]?)\b/,/\b(\d{5,8}-[A-Z0-9]{2,6})\b/,/\bDWG[#:\s]+([A-Z0-9\-]{4,16})\b/i,/\bDRAWING[#:\s]+([A-Z0-9\-]{4,16})\b/i,/\b(DRW-\d{4,8})\b/i,/\b([A-Z]{2,3}-\d{4,8})\b/];
+    for (const p of patterns) { const m = text.match(p); if (m) return m[1]; }
+    const fallback = text.match(/\b([A-Z]{2}\d{4,7})\b/);
+    return fallback ? fallback[1] : '';
+  }
+
+  function parseFrame(text) {
+    const patterns = [/\b(\d{3,4}\/\d{3,4}[A-Z]{1,3})\b/,/\b(\d{3,4}[A-Z]{1,3}\s*FR)\b/i,/\b(\d{3,4}[A-Z]{1,3})\b/,/FRAME[:\s]+([A-Z0-9\/\s-]{3,16})/i,/FR[:\s]+([A-Z0-9\/]{3,12})\b/i];
+    for (const p of patterns) { const m = text.match(p); if (m) return (m[1] || '').trim().toUpperCase(); }
+    return '';
+  }
+
+  function parseRevision(text) {
+    const patterns = [/\bREV(?:ISION)?[:\s]+([A-Z0-9])\b/i,/\bRev\.?\s*([A-Z])\b/,/\bR\s*-\s*([A-Z])\b/,/[\|\s]REV[\|\s]([A-Z])[\|\s]/i];
+    for (const p of patterns) { const m = text.match(p); if (m) return m[1].toUpperCase(); }
+    return 'A';
+  }
+
+  function parseDescription(text) {
+    const patterns = [/DESCRIPTION[:\s]+([^\n\r|]{8,60})/i,/TITLE[:\s]+([^\n\r|]{8,60})/i,/(\d{3}\/\d{3}[A-Z]{1,3}\s+(?:FR|FRAME)?[^|,\n]{8,50})/i];
+    for (const p of patterns) { const m = text.match(p); if (m) return m[1].trim().substring(0, 80); }
+    return '';
+  }
+
+  function parseDate(text) {
+    const patterns = [/(\d{2}-\d{2}-\d{4})/,/(\d{4}-\d{2}-\d{2})/,/(\d{1,2}\/\d{1,2}\/\d{2,4})/,/DATE[:\s]+([^\s|]{6,12})/i];
+    for (const p of patterns) { const m = text.match(p); if (m) return m[1].trim(); }
+    return '';
+  }
+
+  function parsePeople(text) {
+    const approvedBy = (text.match(/(?:APPROVED\s*BY|APPVD)[:\s]+([A-Z]{2,8})\b/i) || [])[1] || '';
+    const designer   = (text.match(/(?:DESIGNED\s*BY|DRAWN\s*BY|DESIGNER|DRWN)[:\s]+([A-Z]{2,8})\b/i) || [])[1] || '';
+    const checkedBy  = (text.match(/(?:CHECKED\s*BY|CHKD)[:\s]+([A-Z]{2,8})\b/i) || [])[1] || '';
+    return { approvedBy, designer, checkedBy };
+  }
+
+  function parseDimensionTable(text) {
+    const dimensions = {};
+    const dimPattern = /\b(2?[A-Z]{1,3}(?:\d)?)\s*[=:\s]+(\d{1,4}\.\d{1,4})\b/g;
+    let m;
+    while ((m = dimPattern.exec(text)) !== null) {
+      const code = m[1].toUpperCase(); const val = parseFloat(m[2]);
+      if (code.length <= 4 && val > 0 && val < 9999) dimensions[code] = m[2];
+    }
+    return dimensions;
+  }
+
+  function parseGeneralDimensions(text) {
+    const seen = new Set(); const pattern = /\b(\d{1,4}\.\d{2,4})\b/g; let m;
+    while ((m = pattern.exec(text)) !== null) { const val = parseFloat(m[1]); if (val >= 0.01 && val <= 9999) seen.add(m[1]); }
+    return [...seen].sort((a, b) => parseFloat(a) - parseFloat(b));
+  }
+
+  function parseNotes(text) {
+    const m = text.match(/NOTES?[:\s]*([\s\S]{10,500}?)(?:REVISION|REV[:\s]|$)/i);
+    return m ? m[1].trim().substring(0, 500) : '';
+  }
+
+  async function parse(file) {
+    const { pdf, fullText } = await extractText(file);
+    const { approvedBy, designer, checkedBy } = parsePeople(fullText);
+    const dimensions    = parseDimensionTable(fullText);
+    const generalDims   = parseGeneralDimensions(fullText);
+    const tableVals     = new Set(Object.values(dimensions));
+    const filteredGeneral = generalDims.filter(d => !tableVals.has(d));
+    return {
+      drawingNumber: parseDrawingNumber(fullText) || ('UNK-' + Date.now()),
+      description: parseDescription(fullText), frame: parseFrame(fullText),
+      revision: parseRevision(fullText), date: parseDate(fullText),
+      approvedBy, designer, checkedBy, dimensions, generalDimensions: filteredGeneral,
+      notes: parseNotes(fullText), rawText: fullText.substring(0, 2000),
+      uploadDate: new Date().toISOString(), fileName: file.name,
+    };
+  }
+
+  return { parse };
+})();
+
+// ============================================================
+// TOAST NOTIFICATIONS
+// ============================================================
+const Toast = (() => {
+  const icons = {
+    success: `<svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16" style="color:#16a34a"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>`,
+    error:   `<svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16" style="color:#dc2626"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>`,
+    warning: `<svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16" style="color:#d97706"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>`,
+    info:    `<svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16" style="color:#005BAC"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>`,
+  };
+  return {
+    show(message, type = 'info', title = '') {
+      const container = document.getElementById('toastContainer'); if (!container) return;
+      const el = document.createElement('div'); el.className = 'toast toast--' + type;
+      el.innerHTML = '<div class="toast-icon">' + (icons[type] || icons.info) + '</div><div class="toast-body">' + (title ? '<div class="toast-title">' + esc(title) + '</div>' : '') + '<div class="toast-msg">' + esc(message) + '</div></div><button class="toast-close" aria-label="Close">\u00d7</button>';
+      el.querySelector('.toast-close').addEventListener('click', () => el.remove());
+      container.appendChild(el);
+      setTimeout(() => { el.classList.add('hiding'); setTimeout(() => el.remove(), 300); }, 4500);
+    }
+  };
+})();
+
+// ============================================================
+// THEME MODULE
+// ============================================================
+const Theme = (() => {
+  function apply(theme) {
+    const attr = theme === 'light' ? '' : theme;
+    document.documentElement.setAttribute('data-theme', attr);
+    document.body.setAttribute('data-theme', attr);
+    const sunIcon = document.getElementById('sunIcon'); const moonIcon = document.getElementById('moonIcon');
+    if (sunIcon)  sunIcon.style.display  = theme === 'dark' ? 'none'  : 'block';
+    if (moonIcon) moonIcon.style.display = theme === 'dark' ? 'block' : 'none';
+    ['light', 'dark', 'engineering'].forEach(t => {
+      const btn = document.getElementById('theme' + t[0].toUpperCase() + t.slice(1));
+      if (btn) btn.classList.toggle('active', t === theme);
+    });
+    const s = Storage.getSettings(); s.theme = theme; Storage.saveSettings(s);
+  }
+  function init() { apply(Storage.getSettings().theme || 'light'); }
+  return { apply, init };
+})();
+
+// ============================================================
+// DASHBOARD MODULE
+// ============================================================
+const Dashboard = (() => {
+  function setText(id, val) { const el = document.getElementById(id); if (el) el.textContent = val; }
+
+  function update() {
+    const drawings = Storage.getAll(); const count = drawings.length;
+    setText('statTotalDrawings', count);
+    setText('statTotalChange', count === 0 ? 'No drawings yet' : count + ' drawing' + (count > 1 ? 's' : '') + ' loaded');
+    const frames = [...new Set(drawings.map(d => d.frame).filter(Boolean))];
+    setText('statFrames', frames.length);
+    setText('statFramesChange', frames.length ? frames.slice(0, 3).join(', ') : '—');
+    let totalDims = 0;
+    drawings.forEach(d => { totalDims += Object.keys(d.dimensions || {}).length; totalDims += (d.generalDimensions || []).length; });
+    setText('statDimensions', totalDims.toLocaleString());
+    setText('statDimensionsChange', count > 0 ? '~' + Math.round(totalDims / count) + ' per drawing' : '—');
+    const latest = drawings[0];
+    setText('statRecent', latest ? latest.drawingNumber : '—'); setText('statRecentChange', latest ? fmtDate(latest.uploadDate) : '—');
+    setText('statRevision', latest ? (latest.revision || '—') : '—'); setText('statRevisionChange', latest ? latest.drawingNumber : '—');
+    setText('dbCountNum', count); setText('footerDbStat', count + ' drawing' + (count !== 1 ? 's' : '') + ' in database');
+    renderRecentList(drawings.slice(0, 8));
+  }
+
+  function renderRecentList(drawings) {
+    const el = document.getElementById('recentDrawingsList'); if (!el) return;
+    if (!drawings.length) {
+      el.innerHTML = '<div class="empty-state"><svg viewBox="0 0 48 48" fill="none" width="48" height="48"><rect width="48" height="48" rx="8" fill="#EFF6FF"/><path d="M14 12h20a2 2 0 012 2v20a2 2 0 01-2 2H14a2 2 0 01-2-2V14a2 2 0 012-2z" stroke="#003366" stroke-width="1.5"/><path d="M18 20h12M18 24h8M18 28h10" stroke="#003366" stroke-width="1.5" stroke-linecap="round"/></svg><p>No drawings uploaded yet.</p><button class="btn-primary btn-sm mt-8" data-nav="upload">Upload First Drawing</button></div>';
+      return;
+    }
+    el.innerHTML = '';
+    drawings.forEach(d => {
+      const row = document.createElement('div'); row.className = 'recent-drawing-row'; row.dataset.openDrawing = d.drawingNumber;
+      row.innerHTML = '<div class="recent-row-left"><span class="recent-row-num">' + esc(d.drawingNumber) + '</span><span class="recent-row-desc">' + esc(d.description || d.frame || '—') + '</span></div><div class="recent-row-right">' + (d.frame ? '<span class="badge badge--gray">' + esc(d.frame) + '</span>' : '') + (d.revision ? '<span class="badge--rev">Rev ' + esc(d.revision) + '</span>' : '') + '<span class="badge badge--gray" style="font-size:0.67rem">' + fmtDate(d.uploadDate) + '</span></div>';
+      el.appendChild(row);
+    });
+  }
+  return { update };
+})();
+
+// ============================================================
+// UPLOAD MODULE
+// ============================================================
+const Upload = (() => {
+  let pendingDrawing = null, pendingFile = null, pendingResolve = null;
+
+  function init() {
+    const dropZone = document.getElementById('dropZone'); const fileInput = document.getElementById('fileInput');
+    document.getElementById('browseBtn').addEventListener('click', () => fileInput.click());
+    dropZone.addEventListener('click', (e) => { if (!e.target.closest('button')) fileInput.click(); });
+    fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+    dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.classList.remove('drag-over'); handleFiles(e.dataTransfer.files); });
+    document.getElementById('clearQueueBtn').addEventListener('click', () => { document.getElementById('uploadItems').innerHTML = ''; document.getElementById('uploadQueue').style.display = 'none'; fileInput.value = ''; });
+    document.getElementById('dupModalOverwrite').addEventListener('click', () => { if (pendingDrawing && pendingFile && pendingResolve) { const r = pendingResolve; const d = pendingDrawing; const f = pendingFile; closeDupModal(); r({ action: 'overwrite', drawing: d, file: f }); } });
+    document.getElementById('dupModalCancel').addEventListener('click', () => { if (pendingResolve) { const r = pendingResolve; closeDupModal(); r({ action: 'skip' }); } });
+    document.getElementById('dupModalClose').addEventListener('click', () => { if (pendingResolve) { const r = pendingResolve; closeDupModal(); r({ action: 'skip' }); } });
+  }
+
+  function closeDupModal() { document.getElementById('duplicateModal').style.display = 'none'; pendingDrawing = null; pendingFile = null; pendingResolve = null; }
+
+  async function handleFiles(files) {
+    const pdfs = [...files].filter(f => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf'));
+    if (!pdfs.length) { Toast.show('Please upload PDF files only.', 'error', 'Invalid File Type'); return; }
+    const queue = document.getElementById('uploadQueue'); const items = document.getElementById('uploadItems');
+    queue.style.display = 'block';
+    for (const file of pdfs) {
+      const itemId = 'upload_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+      items.appendChild(createUploadRow(itemId, file.name));
+      try {
+        setStatus(itemId, 20, 'processing');
+        const data = await PDFParser.parse(file);
+        setStatus(itemId, 55, 'processing'); updateRowMeta(itemId, data);
+        const result = Storage.add(data);
+        if (result.conflict) {
+          const { action } = await askOverwrite(data, result.conflict, file);
+          if (action === 'overwrite') {
+            setStatus(itemId, 70, 'processing');
+            await storePDFFromFile(data.drawingNumber, file);
+            const ok = Storage.overwrite(data);
+            if (ok) { setStatus(itemId, 100, 'success'); Toast.show(data.drawingNumber + ' overwritten successfully.', 'warning', 'Overwrite'); }
+            else { setStatus(itemId, 0, 'error'); Toast.show('Storage full — could not overwrite ' + data.drawingNumber + '.', 'error', 'Storage Error'); }
+          } else { setStatus(itemId, 0, 'skipped'); Toast.show(data.drawingNumber + ' kept unchanged.', 'info', 'Skipped'); }
+        } else if (result.error) {
+          setStatus(itemId, 0, 'error'); Toast.show('Storage full — could not save ' + data.drawingNumber + '.', 'error', 'Storage Error');
+        } else {
+          setStatus(itemId, 75, 'processing');
+          await storePDFFromFile(data.drawingNumber, file);
+          setStatus(itemId, 100, 'success'); Toast.show(data.drawingNumber + ' processed successfully.', 'success', 'Upload Complete');
+        }
+        Dashboard.update(); Database.refresh(); Compare.populateSelects();
+      } catch (err) { console.error(err); setStatus(itemId, 0, 'error'); Toast.show('Failed to read ' + file.name + ': ' + err.message, 'error', 'Processing Error'); }
+    }
+    document.getElementById('fileInput').value = '';
+  }
+
+  async function storePDFFromFile(drawingNumber, file) {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload  = (e) => { Storage.storePDF(drawingNumber, e.target.result); resolve(true); };
+      reader.onerror = () => resolve(false);
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function createUploadRow(id, fileName) {
+    const row = document.createElement('div'); row.className = 'upload-item'; row.id = id;
+    row.innerHTML = '<span class="upload-item-name" title="' + esc(fileName) + '">' + esc(fileName) + '</span><span class="upload-item-num">—</span><span class="upload-item-rev">—</span><div class="progress-bar-wrapper"><div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div></div><span class="upload-status status-processing"><div class="spinner--sm"></div> Processing</span>';
+    return row;
+  }
+
+  function setStatus(id, pct, status) {
+    const row = document.getElementById(id); if (!row) return;
+    const fill = row.querySelector('.progress-fill'); if (fill) fill.style.width = pct + '%';
+    const old = row.querySelector('.upload-status'); if (!old) return;
+    const next = document.createElement('span'); next.className = 'upload-status';
+    const map = { processing: '<div class="spinner--sm"></div> Processing…', success: '<span class="status-success">✓ Processed</span>', error: '<span class="status-error">✗ Error</span>', skipped: '<span class="status-processing">↷ Skipped</span>' };
+    next.innerHTML = map[status] || map.processing; old.replaceWith(next);
+  }
+
+  function updateRowMeta(id, data) {
+    const row = document.getElementById(id); if (!row) return;
+    const numEl = row.querySelector('.upload-item-num'); const revEl = row.querySelector('.upload-item-rev');
+    if (numEl) numEl.textContent = data.drawingNumber;
+    if (revEl) revEl.innerHTML = data.revision ? '<span class="badge--rev">' + esc(data.revision) + '</span>' : '—';
+  }
+
+  function askOverwrite(newData, existing, file) {
+    return new Promise((resolve) => {
+      pendingDrawing = newData; pendingFile = file; pendingResolve = resolve;
+      const msg = document.getElementById('dupModalMessage');
+      if (msg) msg.textContent = 'Drawing "' + newData.drawingNumber + '" already exists (Rev ' + (existing.revision || '?') + '). Overwrite with the new upload (Rev ' + (newData.revision || '?') + ')?';
+      document.getElementById('duplicateModal').style.display = 'flex';
+    });
+  }
+
+  return { init };
+})();
+
+// ============================================================
+// SEARCH MODULE
+// ============================================================
+const Search = (() => {
+  let debounceTimer = null;
+
+  function init() {
+    const input = document.getElementById('searchInput'); const clearBtn = document.getElementById('searchClear');
+    input.addEventListener('input', () => {
+      const q = input.value.trim(); clearBtn.style.display = q ? 'flex' : 'none';
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => { showSuggestions(q); if (q.length >= 2) runSearch(q); else clearResults(); }, 220);
+    });
+    clearBtn.addEventListener('click', () => { input.value = ''; clearBtn.style.display = 'none'; clearSuggestions(); clearResults(); });
+    document.addEventListener('click', (e) => { if (!e.target.closest('.search-bar-wrapper')) clearSuggestions(); });
+    document.getElementById('searchSuggestions').addEventListener('click', (e) => { const item = e.target.closest('[data-suggestion]'); if (item) selectSuggestion(item.dataset.suggestion); });
+  }
+
+  function showSuggestions(q) {
+    const box = document.getElementById('searchSuggestions');
+    if (!q || q.length < 2) { box.style.display = 'none'; return; }
+    const hits = Storage.getAll().filter(d => matches(d, q)).slice(0, 6);
+    if (!hits.length) { box.style.display = 'none'; return; }
+    box.innerHTML = '';
+    hits.forEach(d => {
+      const item = document.createElement('div'); item.className = 'search-suggestion-item'; item.dataset.suggestion = d.drawingNumber;
+      item.innerHTML = '<span class="suggestion-num">' + highlight(d.drawingNumber, q) + '</span><span class="suggestion-desc">' + esc(d.description || d.frame || '—') + '</span>' + (d.revision ? '<span class="badge--rev" style="margin-left:auto">Rev ' + esc(d.revision) + '</span>' : '');
+      box.appendChild(item);
+    });
+    box.style.display = 'block';
+  }
+
+  function clearSuggestions() { document.getElementById('searchSuggestions').style.display = 'none'; }
+  function selectSuggestion(num) { const input = document.getElementById('searchInput'); input.value = num; document.getElementById('searchClear').style.display = 'flex'; clearSuggestions(); runSearch(num); }
+  function runSearch(q) { renderResults(Storage.getAll().filter(d => matches(d, q)), q); }
+  function clearResults() { document.getElementById('searchResults').innerHTML = ''; }
+  function matches(d, q) { const ql = q.toLowerCase(); return [d.drawingNumber, d.frame, d.description, d.revision, d.designer].some(v => (v || '').toLowerCase().includes(ql)); }
+
+  function renderResults(drawings, q) {
+    const el = document.getElementById('searchResults'); el.innerHTML = '';
+    if (!drawings.length) { el.innerHTML = '<div class="empty-state"><svg viewBox="0 0 48 48" fill="none" width="48" height="48"><rect width="48" height="48" rx="8" fill="#FEF3C7"/><path d="M20 8a12 12 0 100 24A12 12 0 0020 8zm0 4a8 8 0 110 16 8 8 0 010-16z" fill="#D97706"/><path d="M29.5 29.5l9 9" stroke="#D97706" stroke-width="2.5" stroke-linecap="round"/></svg><p>No drawings found for &ldquo;<strong>' + esc(q) + '</strong>&rdquo;</p></div>'; return; }
+    drawings.forEach(d => el.appendChild(buildResultCard(d, q)));
+  }
+
+  function buildResultCard(d, q) {
+    const dims = d.dimensions || {}; const dimKeys = Object.keys(dims); const genDims = (d.generalDimensions || []).slice(0, 20);
+    const card = document.createElement('div'); card.className = 'search-result-card';
+    const header = document.createElement('div'); header.className = 'result-header';
+    header.innerHTML = '<div><div class="result-number">' + highlight(d.drawingNumber, q) + '</div><div class="result-desc">' + esc(d.description || '—') + '</div></div><div class="result-badges">' + (d.frame ? '<span class="result-badge">' + esc(d.frame) + '</span>' : '') + (d.revision ? '<span class="result-badge">Rev ' + esc(d.revision) + '</span>' : '') + '</div>';
+    const meta = document.createElement('div'); meta.className = 'result-meta';
+    [d.revision ? ['Revision','Rev '+d.revision] : null, d.date ? ['Date',d.date] : null, d.approvedBy ? ['Approved By',d.approvedBy] : null, d.designer ? ['Designer',d.designer] : null, d.checkedBy ? ['Checked By',d.checkedBy] : null, ['Uploaded',fmtDate(d.uploadDate)]].filter(Boolean).forEach(([label,val]) => {
+      const item = document.createElement('div'); item.className = 'result-meta-item';
+      item.innerHTML = '<span class="result-meta-label">' + esc(label) + '</span><span class="result-meta-value">' + esc(val) + '</span>'; meta.appendChild(item);
+    });
+    const body = document.createElement('div'); body.className = 'result-body';
+    if (dimKeys.length) {
+      const dimSec = document.createElement('div'); dimSec.className = 'result-dim-section';
+      dimSec.innerHTML = '<div class="result-dim-title">Dimension Table</div><div class="table-wrapper"><table class="data-table dim-table"><thead><tr><th>Dim</th><th>Value</th></tr></thead><tbody>' + dimKeys.slice(0,12).map(k => '<tr><td style="font-family:\'JetBrains Mono\',monospace;font-weight:600;color:var(--accent)">' + esc(k) + '</td><td style="font-family:\'JetBrains Mono\',monospace">' + esc(dims[k]) + '</td></tr>').join('') + '</tbody></table></div>' + (dimKeys.length > 12 ? '<p style="font-size:0.72rem;color:var(--text-muted);margin-top:6px">+' + (dimKeys.length - 12) + ' more dimensions</p>' : '');
+      body.appendChild(dimSec);
+    }
+    if (genDims.length) {
+      const genSec = document.createElement('div'); genSec.className = 'result-dim-section';
+      genSec.innerHTML = '<div class="result-dim-title">General Dimensions</div><div class="dim-badges"></div>';
+      const badges = genSec.querySelector('.dim-badges');
+      genDims.forEach(v => { const b = document.createElement('span'); b.className = 'dim-badge'; b.textContent = v; badges.appendChild(b); });
+      body.appendChild(genSec);
+    }
+    const actions = document.createElement('div'); actions.className = 'result-actions';
+    [{ text: 'Open Drawing', action: 'open', cls: '' }, { text: 'Compare', action: 'compare', cls: '' }, { text: 'Download PDF', action: 'download', cls: '' }, { text: 'Delete', action: 'delete', cls: 'tbl-btn--danger' }].forEach(({ text, action, cls }) => {
+      const btn = document.createElement('button'); btn.className = 'tbl-btn ' + cls; btn.textContent = text; btn.dataset.action = action; btn.dataset.drawingNum = d.drawingNumber; actions.appendChild(btn);
+    });
+    card.appendChild(header); card.appendChild(meta); card.appendChild(body); card.appendChild(actions);
+    return card;
+  }
+
+  function highlight(text, q) {
+    if (!q) return esc(text);
+    const escaped = esc(text); const escapedQ = esc(q).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return escaped.replace(new RegExp('(' + escapedQ + ')', 'gi'), '<mark style="background:#FEF08A;border-radius:2px">$1</mark>');
+  }
+
+  return { init };
+})();
+
+// ============================================================
+// DATABASE MODULE
+// ============================================================
+const Database = (() => {
+  let sortCol = 'uploadDate', sortDir = 'desc', currentPage = 1;
+  const PAGE_SIZE = 15; let filteredData = [];
+
+  function init() {
+    document.getElementById('dbSearchInput').addEventListener('input', refresh);
+    document.getElementById('filterFrame').addEventListener('change', refresh);
+    document.getElementById('filterRevision').addEventListener('change', refresh);
+    document.querySelectorAll('#dbTable th.sortable').forEach(th => {
+      th.addEventListener('click', () => {
+        const col = th.dataset.col;
+        if (sortCol === col) sortDir = sortDir === 'asc' ? 'desc' : 'asc'; else { sortCol = col; sortDir = 'asc'; }
+        document.querySelectorAll('#dbTable th.sortable').forEach(t => t.classList.remove('sort-asc', 'sort-desc'));
+        th.classList.add('sort-' + sortDir); refresh();
+      });
+    });
+  }
+
+  function refresh() {
+    const q = (document.getElementById('dbSearchInput').value || '').toLowerCase();
+    const frame = document.getElementById('filterFrame').value; const rev = document.getElementById('filterRevision').value;
+    const drawings = Storage.getAll();
+    filteredData = drawings.filter(d => {
+      const matchQ = !q || [d.drawingNumber, d.frame, d.revision, d.description, d.designer].some(v => (v || '').toLowerCase().includes(q));
+      return matchQ && (!frame || d.frame === frame) && (!rev || d.revision === rev);
+    });
+    filteredData.sort((a, b) => { const av = String(a[sortCol] || ''); const bv = String(b[sortCol] || ''); return sortDir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av); });
+    currentPage = 1; renderTable(); populateFilters(drawings);
+  }
+
+  function renderTable() {
+    const body = document.getElementById('dbTableBody'); const total = filteredData.length;
+    const start = (currentPage - 1) * PAGE_SIZE; const page = filteredData.slice(start, start + PAGE_SIZE);
+    const countEl = document.getElementById('dbTableCount'); if (countEl) countEl.textContent = total + ' record' + (total !== 1 ? 's' : '');
+    body.innerHTML = '';
+    if (!page.length) { const tr = document.createElement('tr'); tr.innerHTML = '<td colspan="6" class="table-empty">No drawings found</td>'; body.appendChild(tr); renderPagination(0); return; }
+    page.forEach(d => {
+      const tr = document.createElement('tr');
+      const actions = '<button class="tbl-btn" data-action="open" data-drawing-num="' + esc(d.drawingNumber) + '">Open</button><button class="tbl-btn" data-action="compare" data-drawing-num="' + esc(d.drawingNumber) + '">Compare</button><button class="tbl-btn" data-action="download" data-drawing-num="' + esc(d.drawingNumber) + '">PDF</button><button class="tbl-btn tbl-btn--danger" data-action="delete" data-drawing-num="' + esc(d.drawingNumber) + '">Delete</button>';
+      tr.innerHTML = '<td style="font-weight:700;font-family:\'JetBrains Mono\',monospace;color:var(--accent)">' + esc(d.drawingNumber) + '</td><td>' + (d.frame ? '<span class="badge badge--gray">' + esc(d.frame) + '</span>' : '—') + '</td><td>' + (d.revision ? '<span class="badge--rev">Rev ' + esc(d.revision) + '</span>' : '—') + '</td><td style="max-width:240px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(d.description || '—') + '</td><td style="white-space:nowrap">' + fmtDate(d.uploadDate) + '</td><td><div class="table-actions">' + actions + '</div></td>';
+      body.appendChild(tr);
+    });
+    renderPagination(total);
+  }
+
+  function renderPagination(total) {
+    const pages = Math.ceil(total / PAGE_SIZE); const el = document.getElementById('dbPagination'); if (!el) return;
+    el.innerHTML = ''; if (pages <= 1) return;
+    for (let i = 1; i <= pages; i++) { const btn = document.createElement('button'); btn.className = 'page-btn' + (i === currentPage ? ' active' : ''); btn.textContent = i; btn.dataset.page = i; el.appendChild(btn); }
+    el.addEventListener('click', (e) => { const btn = e.target.closest('[data-page]'); if (btn) { currentPage = Number(btn.dataset.page); renderTable(); } });
+  }
+
+  function populateFilters(drawings) {
+    const frames = [...new Set(drawings.map(d => d.frame).filter(Boolean))].sort();
+    const revs   = [...new Set(drawings.map(d => d.revision).filter(Boolean))].sort();
+    const frameEl = document.getElementById('filterFrame'); const selF = frameEl.value;
+    frameEl.innerHTML = '<option value="">All Frames</option>' + frames.map(f => '<option value="' + esc(f) + '"' + (f === selF ? ' selected' : '') + '>' + esc(f) + '</option>').join('');
+    const revEl = document.getElementById('filterRevision'); const selR = revEl.value;
+    revEl.innerHTML = '<option value="">All Revisions</option>' + revs.map(r => '<option value="' + esc(r) + '"' + (r === selR ? ' selected' : '') + '>Rev ' + esc(r) + '</option>').join('');
+    Compare.populateSelects(drawings);
+  }
+
+  return { init, refresh };
+})();
+
+// ============================================================
+// COMPARE MODULE
+// ============================================================
+const Compare = (() => {
+  function init() { document.getElementById('compareBtn').addEventListener('click', run); }
+
+  function populateSelects(drawings) {
+    const all = drawings || Storage.getAll();
+    const selA = document.getElementById('compareSelectA'); const selB = document.getElementById('compareSelectB');
+    const valA = selA.value; const valB = selB.value;
+    const opts = '<option value="">Select Drawing...</option>' + all.map(d => '<option value="' + esc(d.drawingNumber) + '">' + esc(d.drawingNumber) + (d.frame ? ' — ' + esc(d.frame) : '') + '</option>').join('');
+    selA.innerHTML = opts; selB.innerHTML = opts;
+    if (valA) selA.value = valA; if (valB) selB.value = valB;
+  }
+
+  function setAndNavigate(drawingNumber) {
+    App.navigate('compare');
+    const selA = document.getElementById('compareSelectA');
+    if (!selA.value) selA.value = drawingNumber; else document.getElementById('compareSelectB').value = drawingNumber;
+  }
+
+  function run() {
+    const numA = document.getElementById('compareSelectA').value; const numB = document.getElementById('compareSelectB').value;
+    if (!numA || !numB) { Toast.show('Please select two drawings to compare.', 'warning'); return; }
+    if (numA === numB) { Toast.show('Please select two different drawings.', 'warning'); return; }
+    const dA = Storage.getByNumber(numA); const dB = Storage.getByNumber(numB);
+    if (!dA || !dB) { Toast.show('One or both drawings not found.', 'error'); return; }
+    const el = document.getElementById('compareResult'); el.style.display = 'block';
+    const allKeys = [...new Set([...Object.keys(dA.dimensions || {}), ...Object.keys(dB.dimensions || {})])].sort();
+    let sameCount = 0, diffCount = 0;
+    const rows = allKeys.map(k => {
+      const vA = (dA.dimensions || {})[k] || '—'; const vB = (dB.dimensions || {})[k] || '—';
+      const same = vA === vB && vA !== '—'; if (same) sameCount++; else diffCount++;
+      return '<tr class="' + (same ? 'dim-same' : 'dim-diff') + '"><td style="font-family:\'JetBrains Mono\',monospace;font-weight:600">' + esc(k) + '</td><td style="font-family:\'JetBrains Mono\',monospace">' + esc(vA) + '</td><td style="font-family:\'JetBrains Mono\',monospace">' + esc(vB) + '</td><td>' + (same ? '✓ Same' : '✗ Diff') + '</td></tr>';
+    }).join('');
+    el.innerHTML = '<div class="compare-legend"><div class="legend-item"><div class="legend-dot legend-dot--same"></div> Same Values (' + sameCount + ')</div><div class="legend-item"><div class="legend-dot legend-dot--diff"></div> Different (' + diffCount + ')</div></div><div class="compare-grid"><div><div class="compare-header"><h3>' + esc(dA.drawingNumber) + '</h3><p>' + esc(dA.description || '—') + '</p><p style="margin-top:4px;font-size:0.7rem">' + (dA.frame ? 'Frame: ' + esc(dA.frame) + ' · ' : '') + 'Rev ' + esc(dA.revision || '—') + '</p></div></div><div><div class="compare-header" style="background:var(--accent)"><h3>' + esc(dB.drawingNumber) + '</h3><p>' + esc(dB.description || '—') + '</p><p style="margin-top:4px;font-size:0.7rem">' + (dB.frame ? 'Frame: ' + esc(dB.frame) + ' · ' : '') + 'Rev ' + esc(dB.revision || '—') + '</p></div></div></div><div class="card mt-16"><div class="table-wrapper"><table class="compare-table"><thead><tr><th>Dimension</th><th>' + esc(dA.drawingNumber) + '</th><th>' + esc(dB.drawingNumber) + '</th><th>Status</th></tr></thead><tbody>' + (rows || '<tr><td colspan="4" class="table-empty">No dimension data to compare</td></tr>') + '</tbody></table></div></div>';
+  }
+
+  return { init, populateSelects, setAndNavigate };
+})();
+
+// ============================================================
+// DRAWING DETAIL MODAL
+// ============================================================
+const DrawingModal = (() => {
+  let pdfDoc = null, currentPage = 1, scale = 1.0, rotation = 0, currentDrawingNumber = '';
+
+  function init() {
+    document.getElementById('modalCloseBtn').addEventListener('click', close);
+    document.getElementById('drawingModal').addEventListener('click', (e) => { if (e.target.id === 'drawingModal') close(); });
+    document.getElementById('pdfPrevPage').addEventListener('click', () => changePage(-1));
+    document.getElementById('pdfNextPage').addEventListener('click', () => changePage(1));
+    document.getElementById('pdfZoomIn').addEventListener('click', () => setScale(scale * 1.25));
+    document.getElementById('pdfZoomOut').addEventListener('click', () => setScale(scale / 1.25));
+    document.getElementById('pdfFitWidth').addEventListener('click', fitWidth);
+    document.getElementById('pdfFitPage').addEventListener('click', fitPage);
+    document.getElementById('pdfRotate').addEventListener('click', () => { rotation = (rotation + 90) % 360; renderPage(); });
+    document.getElementById('modalDownloadBtn').addEventListener('click', () => App.downloadPDF(currentDrawingNumber));
+    document.getElementById('modalFullscreenBtn').addEventListener('click', toggleFullscreen);
+    document.getElementById('dimSearchInput').addEventListener('input', filterDimTable);
+  }
+
+  function open(drawingNumber) {
+    const d = Storage.getByNumber(drawingNumber); if (!d) { Toast.show('Drawing not found.', 'error'); return; }
+    pdfDoc = null; currentPage = 1; scale = 1.0; rotation = 0; currentDrawingNumber = drawingNumber;
+    document.getElementById('drawingModal').style.display = 'flex'; document.body.style.overflow = 'hidden';
+    document.getElementById('modalDrawingNumber').textContent = d.drawingNumber;
+    const infoGrid = document.getElementById('modalInfoGrid'); infoGrid.innerHTML = '';
+    [['Drawing No.', d.drawingNumber, true], ['Revision', 'Rev ' + (d.revision || '—'), true], ['Frame', d.frame || '—', false], ['Date', d.date || '—', false], ['Approved By', d.approvedBy || '—', false], ['Designer', d.designer || '—', false], ['Checked By', d.checkedBy || '—', false], ['Uploaded', fmtDate(d.uploadDate), false]].forEach(([label, value, mono]) => {
+      const cell = document.createElement('div'); cell.className = 'info-item';
+      const lbl = document.createElement('div'); lbl.className = 'info-label'; lbl.textContent = label;
+      const val = document.createElement('div'); val.className = 'info-value'; if (mono) val.style.fontFamily = "'JetBrains Mono', monospace"; val.textContent = value;
+      cell.appendChild(lbl); cell.appendChild(val); infoGrid.appendChild(cell);
+    });
+    renderDimTable(d.dimensions || {});
+    const genDims = d.generalDimensions || []; const genSec = document.getElementById('generalDimsSection');
+    if (genDims.length) {
+      genSec.style.display = 'block'; const badges = document.getElementById('generalDimsBadges'); badges.innerHTML = '';
+      genDims.forEach(v => { const b = document.createElement('span'); b.className = 'dim-badge'; b.textContent = v; badges.appendChild(b); });
+    } else { genSec.style.display = 'none'; }
+    const notesSec = document.getElementById('modalNotesSection');
+    if (d.notes) { notesSec.style.display = 'block'; document.getElementById('modalNotes').textContent = d.notes; } else { notesSec.style.display = 'none'; }
+    loadPDF(drawingNumber);
+  }
+
+  function renderDimTable(dims) {
+    const tbody = document.getElementById('modalDimTableBody'); tbody.innerHTML = '';
+    const keys = Object.keys(dims);
+    if (!keys.length) { tbody.innerHTML = '<tr><td colspan="2" class="table-empty">No dimension table data</td></tr>'; return; }
+    keys.forEach(k => {
+      const tr = document.createElement('tr'); tr.dataset.dim = k.toLowerCase();
+      const td1 = document.createElement('td'); td1.style.fontFamily = "'JetBrains Mono', monospace"; td1.style.fontWeight = '700'; td1.style.color = 'var(--accent)'; td1.textContent = k;
+      const td2 = document.createElement('td'); td2.style.fontFamily = "'JetBrains Mono', monospace"; td2.textContent = dims[k];
+      tr.appendChild(td1); tr.appendChild(td2); tbody.appendChild(tr);
+    });
+  }
+
+  function filterDimTable() {
+    const q = (document.getElementById('dimSearchInput').value || '').toLowerCase();
+    document.querySelectorAll('#modalDimTableBody tr').forEach(tr => { tr.style.display = (!q || (tr.dataset.dim || '').includes(q) || (tr.textContent || '').toLowerCase().includes(q)) ? '' : 'none'; });
+  }
+
+  function close() { document.getElementById('drawingModal').style.display = 'none'; document.body.style.overflow = ''; pdfDoc = null; currentDrawingNumber = ''; }
+
+  async function loadPDF(drawingNumber) {
+    const dataUri = Storage.getPDF(drawingNumber); const loading = document.getElementById('pdfLoading');
+    loading.style.display = 'flex'; loading.innerHTML = '<div class="spinner"></div><span>Loading PDF…</span>';
+    if (!dataUri) { loading.innerHTML = '<span style="color:rgba(255,255,255,0.5);text-align:center">PDF not stored<br>(storage limit reached)</span>'; return; }
+    try {
+      const pdf = await pdfjsLib.getDocument(dataUri).promise; pdfDoc = pdf;
+      document.getElementById('pdfTotalPages').textContent = pdf.numPages; document.getElementById('pdfCurrentPage').textContent = 1;
+      currentPage = 1; await renderPage(); loading.style.display = 'none';
+    } catch { loading.innerHTML = '<span style="color:rgba(255,255,255,0.5)">Failed to load PDF</span>'; }
+  }
+
+  async function renderPage() {
+    if (!pdfDoc) return;
+    const page = await pdfDoc.getPage(currentPage); const canvas = document.getElementById('pdfCanvas'); const ctx = canvas.getContext('2d');
+    const viewport = page.getViewport({ scale, rotation }); canvas.width = viewport.width; canvas.height = viewport.height;
+    await page.render({ canvasContext: ctx, viewport }).promise;
+    const zoomEl = document.getElementById('pdfZoomLevel'); const pageEl = document.getElementById('pdfCurrentPage');
+    if (zoomEl) zoomEl.textContent = Math.round(scale * 100) + '%'; if (pageEl) pageEl.textContent = currentPage;
+  }
+
+  function changePage(delta) { if (!pdfDoc) return; const next = currentPage + delta; if (next >= 1 && next <= pdfDoc.numPages) { currentPage = next; renderPage(); } }
+  function setScale(s) { scale = Math.min(Math.max(s, 0.25), 5.0); renderPage(); }
+  function fitWidth() { if (!pdfDoc) return; const w = document.getElementById('pdfCanvasWrapper'); pdfDoc.getPage(currentPage).then(p => { const vp = p.getViewport({ scale: 1, rotation }); scale = (w.clientWidth - 32) / vp.width; renderPage(); }); }
+  function fitPage()  { if (!pdfDoc) return; const w = document.getElementById('pdfCanvasWrapper'); pdfDoc.getPage(currentPage).then(p => { const vp = p.getViewport({ scale: 1, rotation }); scale = Math.min((w.clientWidth - 32) / vp.width, (w.clientHeight - 32) / vp.height); renderPage(); }); }
+  function toggleFullscreen() { const modal = document.getElementById('drawingModalContent'); if (!document.fullscreenElement) modal.requestFullscreen?.(); else document.exitFullscreen?.(); }
+
+  return { init, open, close };
+})();
+
+// ============================================================
+// SETTINGS MODULE
+// ============================================================
+const Settings = (() => {
+  function init() {
+    document.getElementById('themeLight').addEventListener('click',       () => Theme.apply('light'));
+    document.getElementById('themeDark').addEventListener('click',        () => Theme.apply('dark'));
+    document.getElementById('themeEngineering').addEventListener('click', () => Theme.apply('engineering'));
+    document.getElementById('themeToggleBtn').addEventListener('click', () => { const s = Storage.getSettings(); Theme.apply(s.theme === 'dark' ? 'light' : 'dark'); });
+    document.getElementById('exportDbBtn').addEventListener('click', () => App.exportData('json'));
+    const importBtn = document.getElementById('importDbBtn'); const importInput = document.getElementById('importFileInput');
+    importBtn.addEventListener('click', () => importInput.click());
+    importInput.addEventListener('change', (e) => {
+      const file = e.target.files[0]; if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        try {
+          const data = JSON.parse(ev.target.result); if (!Array.isArray(data)) throw new Error('Invalid format');
+          Storage.save(data); Dashboard.update(); Database.refresh(); Compare.populateSelects();
+          Toast.show('Imported ' + data.length + ' drawing(s).', 'success', 'Import Complete');
+        } catch { Toast.show('Invalid file. Please use a JSON export from this app.', 'error', 'Import Error'); }
+      };
+      reader.readAsText(file); importInput.value = '';
+    });
+    document.getElementById('clearDbBtn').addEventListener('click', () => {
+      if (!confirm('Delete ALL drawings from the database? This cannot be undone.')) return;
+      Storage.clearAll(); Dashboard.update(); Database.refresh(); Compare.populateSelects();
+      Toast.show('All drawings and PDF files deleted.', 'warning', 'Database Cleared');
+    });
+    const menuBtn = document.getElementById('exportMenuBtn'); const dropdown = document.getElementById('exportDropdown');
+    menuBtn.addEventListener('click', (e) => { e.stopPropagation(); dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none'; });
+    document.addEventListener('click', () => { dropdown.style.display = 'none'; });
+    dropdown.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-export]'); if (!btn) return;
+      const type = btn.dataset.export;
+      if (type === 'print') window.print(); else App.exportData(type);
+    });
+  }
+  return { init };
+})();
+
+// ============================================================
+// EXPORT MODULE
+// ============================================================
+const Export = (() => {
+  function toCSV(drawings) {
+    const headers = ['Drawing Number','Frame','Revision','Description','Date','Approved By','Designer','Upload Date','Dimensions'];
+    const rows = drawings.map(d => [d.drawingNumber,d.frame,d.revision,d.description,d.date,d.approvedBy,d.designer,d.uploadDate ? new Date(d.uploadDate).toLocaleDateString() : '',Object.entries(d.dimensions||{}).map(([k,v])=>k+'='+v).join('; ')].map(v=>'"'+String(v||'').replace(/"/g,'""')+'"').join(','));
+    return [headers.join(','),...rows].join('\n');
+  }
+  function toExcelXML(drawings) {
+    const x = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const headers = ['Drawing Number','Frame','Revision','Description','Date','Approved By','Designer','Upload Date'];
+    const headerRow = headers.map(h=>'<Cell><Data ss:Type="String">'+x(h)+'</Data></Cell>').join('');
+    const dataRows = drawings.map(d=>'<Row>'+[d.drawingNumber,d.frame,d.revision,d.description,d.date,d.approvedBy,d.designer,d.uploadDate?new Date(d.uploadDate).toLocaleDateString():''].map(v=>'<Cell><Data ss:Type="String">'+x(v)+'</Data></Cell>').join('')+'</Row>').join('');
+    return '<?xml version="1.0"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"><Worksheet ss:Name="Motor Drawings"><Table><Row>'+headerRow+'</Row>'+dataRows+'</Table></Worksheet></Workbook>';
+  }
+  function download(content, filename, mime) {
+    const blob = new Blob([content],{type:mime}); const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href=url; a.download=filename; a.click();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }
+  return {
+    export(type) {
+      const drawings = Storage.getAll(); if (!drawings.length) { Toast.show('No drawings to export.','warning'); return; }
+      const ts = new Date().toISOString().slice(0,10);
+      if (type==='csv')   { download(toCSV(drawings),'motor-db-'+ts+'.csv','text/csv'); Toast.show('Exported '+drawings.length+' drawings as CSV.','success','Export'); }
+      else if (type==='json')  { download(JSON.stringify(drawings,null,2),'motor-db-'+ts+'.json','application/json'); Toast.show('Exported '+drawings.length+' drawings as JSON.','success','Export'); }
+      else if (type==='excel') { download(toExcelXML(drawings),'motor-db-'+ts+'.xls','application/vnd.ms-excel'); Toast.show('Exported '+drawings.length+' drawings as Excel.','success','Export'); }
+    }
+  };
+})();
+
+// ============================================================
+// GLOBAL EVENT DELEGATION
+// ============================================================
+function initGlobalDelegation() {
+  document.body.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-action]');
+    if (btn) {
+      const action = btn.dataset.action;
+      if (action === 'open')     DrawingModal.open(btn.dataset.drawingNum);
+      if (action === 'compare')  Compare.setAndNavigate(btn.dataset.drawingNum);
+      if (action === 'download') App.downloadPDF(btn.dataset.drawingNum);
+      if (action === 'delete')   App.deleteDrawing(btn.dataset.drawingNum, btn);
+    }
+    const navBtn = e.target.closest('[data-nav]');
+    if (navBtn) App.navigate(navBtn.dataset.nav);
+    const openRow = e.target.closest('[data-open-drawing]');
+    if (openRow && !e.target.closest('[data-action]')) DrawingModal.open(openRow.dataset.openDrawing);
+  });
+}
+
+// ============================================================
+// MAIN APP MODULE
+// ============================================================
+const App = (() => {
+  function navigate(section) {
+    document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.section === section));
+    document.querySelectorAll('.content-section').forEach(sec => sec.classList.toggle('active', sec.id === 'section-' + section));
+    const hero = document.getElementById('heroBanner'); if (hero) hero.style.display = section === 'dashboard' ? '' : 'none';
+    if (section === 'database')  Database.refresh();
+    if (section === 'dashboard') Dashboard.update();
+    if (section === 'compare')   Compare.populateSelects();
+  }
+
+  function deleteDrawing(drawingNumber, btnEl) {
+    if (!confirm('Delete drawing "' + drawingNumber + '"? This cannot be undone.')) return;
+    Storage.delete(drawingNumber); Storage.deletePDF(drawingNumber);
+    const row = btnEl?.closest('tr') || btnEl?.closest('.search-result-card');
+    if (row) { row.style.opacity = '0'; row.style.transition = 'opacity 0.3s'; setTimeout(() => row.remove(), 300); }
+    Dashboard.update(); Database.refresh(); Compare.populateSelects();
+    Toast.show('Drawing ' + drawingNumber + ' deleted.', 'success', 'Deleted');
+  }
+
+  function downloadPDF(drawingNumber) {
+    const data = Storage.getPDF(drawingNumber);
+    if (!data) { Toast.show('PDF not available for this drawing.', 'error'); return; }
+    const a = document.createElement('a'); a.href = data; a.download = drawingNumber + '.pdf'; a.click();
+  }
+
+  function exportData(type) { Export.export(type); }
+
+  function init() {
+    document.querySelectorAll('.nav-btn').forEach(btn => btn.addEventListener('click', () => navigate(btn.dataset.section)));
+    initGlobalDelegation(); Theme.init(); Upload.init(); Search.init();
+    Database.init(); Compare.init(); DrawingModal.init(); Settings.init();
+    Dashboard.update(); Database.refresh(); navigate('dashboard');
+  }
+
+  return { init, navigate, deleteDrawing, downloadPDF, exportData };
+})();
+
+// ============================================================
+// HELPERS
+// ============================================================
+function esc(str) {
+  return String(str === undefined || str === null ? '' : str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+function fmtDate(iso) {
+  if (!iso) return '—';
+  try { const d = new Date(iso); if (isNaN(d.getTime())) return String(iso).slice(0,10); return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }
+  catch { return '—'; }
+}
+
+// ============================================================
+// BOOT
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+  if (typeof pdfjsLib === 'undefined') console.warn('PDF.js not loaded — PDF processing unavailable.');
+  App.init();
+});
+</script>
+</body>
+</html>
